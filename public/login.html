@@ -1,0 +1,847 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pulse Intelligence — Augmentation Consulting Group</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=DM+Mono:wght@300;400;500&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --black:#08090b; --deep:#0d0f14; --panel:#111318; --surface:#181b23;
+  --lift:#1e2230; --rule:rgba(255,255,255,0.07); --rule2:rgba(255,255,255,0.04);
+  --text:#e8eaf0; --text2:#9297a8; --text3:#555b6e; --text4:#373d4d;
+  --accent:#c8a96e; --accentd:#a8863e; --accentl:#e8cb98;
+  --red:#e85d2f; --green:#22c55e; --blue:#3b82f6;
+  --serif:'Cormorant Garamond',Georgia,serif;
+  --mono:'DM Mono',monospace; --sans:'DM Sans',sans-serif;
+}
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
+html{scroll-behavior:smooth;}
+body{font-family:var(--sans);background:var(--black);color:var(--text);min-height:100vh;overflow-x:hidden;-webkit-font-smoothing:antialiased;}
+
+/* NAV */
+nav{position:fixed;top:0;left:0;right:0;z-index:100;height:60px;display:flex;align-items:center;justify-content:space-between;padding:0 48px;background:rgba(8,9,11,0.85);backdrop-filter:blur(20px);border-bottom:1px solid var(--rule);}
+.nav-brand{display:flex;flex-direction:column;}
+.nav-brand-name{font-family:var(--serif);font-size:20px;font-weight:500;letter-spacing:0.02em;color:var(--text);line-height:1;}
+.nav-brand-name span{color:var(--accent);}
+.nav-brand-sub{font-family:var(--mono);font-size:8px;letter-spacing:0.18em;text-transform:uppercase;color:var(--text3);margin-top:2px;}
+.nav-links{display:flex;align-items:center;gap:32px;}
+.nav-link{font-family:var(--mono);font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:var(--text3);text-decoration:none;transition:color 0.15s;}
+.nav-link:hover{color:var(--accent);}
+.nav-cta{padding:8px 20px;border-radius:6px;background:var(--accent);color:var(--black);font-family:var(--mono);font-size:10px;font-weight:500;letter-spacing:0.1em;text-transform:uppercase;cursor:pointer;border:none;transition:all 0.15s;}
+.nav-cta:hover{background:var(--accentl);}
+
+/* HERO */
+.hero{min-height:100vh;display:grid;grid-template-columns:1fr 1fr;position:relative;overflow:hidden;}
+.hero-bg{position:absolute;inset:0;z-index:0;background:linear-gradient(rgba(200,169,110,0.03) 1px,transparent 1px),linear-gradient(90deg,rgba(200,169,110,0.03) 1px,transparent 1px);background-size:60px 60px;animation:gridfade 8s ease-in-out infinite alternate;}
+@keyframes gridfade{from{opacity:0.5;}to{opacity:1;}}
+.hero-glow{position:absolute;top:-200px;left:-200px;width:800px;height:800px;border-radius:50%;background:radial-gradient(circle,rgba(200,169,110,0.06) 0%,transparent 70%);pointer-events:none;}
+.hero-glow2{position:absolute;bottom:-300px;right:100px;width:600px;height:600px;border-radius:50%;background:radial-gradient(circle,rgba(59,130,246,0.04) 0%,transparent 70%);pointer-events:none;}
+.hero-left{position:relative;z-index:1;display:flex;flex-direction:column;justify-content:center;padding:120px 64px 80px;}
+.hero-eyebrow{font-family:var(--mono);font-size:9px;letter-spacing:0.2em;text-transform:uppercase;color:var(--accent);margin-bottom:20px;display:flex;align-items:center;gap:10px;}
+.hero-eyebrow::before{content:'';display:block;width:24px;height:1px;background:var(--accent);}
+.hero-headline{font-family:var(--serif);font-size:clamp(46px,5vw,74px);font-weight:300;line-height:1.05;letter-spacing:-0.02em;color:var(--text);margin-bottom:8px;}
+.hero-headline em{font-style:italic;color:var(--accent);}
+.hero-subhead{font-family:var(--serif);font-size:clamp(18px,2vw,26px);font-weight:300;color:var(--text3);margin-bottom:24px;line-height:1.3;letter-spacing:-0.01em;}
+.hero-body{font-size:14px;line-height:1.75;color:var(--text2);max-width:480px;margin-bottom:40px;}
+.hero-stats{display:flex;gap:40px;margin-bottom:44px;}
+.stat{display:flex;flex-direction:column;gap:3px;}
+.stat-num{font-family:var(--serif);font-size:36px;font-weight:300;color:var(--accent);line-height:1;}
+.stat-label{font-family:var(--mono);font-size:9px;letter-spacing:0.14em;text-transform:uppercase;color:var(--text3);}
+.hero-actions{display:flex;gap:12px;align-items:center;}
+.btn-primary{padding:14px 32px;border-radius:8px;background:var(--accent);color:var(--black);font-family:var(--mono);font-size:11px;font-weight:500;letter-spacing:0.1em;text-transform:uppercase;border:none;cursor:pointer;transition:all 0.2s;}
+.btn-primary:hover{background:var(--accentl);transform:translateY(-1px);}
+.btn-ghost{padding:14px 28px;border-radius:8px;background:transparent;color:var(--text2);font-family:var(--mono);font-size:11px;letter-spacing:0.1em;text-transform:uppercase;border:1px solid var(--rule);cursor:pointer;transition:all 0.2s;}
+.btn-ghost:hover{border-color:var(--accent);color:var(--accent);}
+.hero-right{position:relative;z-index:1;display:flex;align-items:center;padding:120px 0 80px 40px;}
+.app-mockup{width:100%;max-width:560px;background:var(--panel);border:1px solid var(--rule);border-radius:16px;overflow:hidden;box-shadow:0 32px 80px rgba(0,0,0,0.6),0 0 0 1px rgba(200,169,110,0.08);animation:float 6s ease-in-out infinite;}
+@keyframes float{0%,100%{transform:translateY(0);}50%{transform:translateY(-8px);}}
+.mockup-bar{height:40px;background:var(--deep);border-bottom:1px solid var(--rule);display:flex;align-items:center;padding:0 14px;gap:6px;}
+.mockup-dot{width:10px;height:10px;border-radius:50%;}
+.mockup-tabs{display:flex;padding:0 16px;background:var(--deep);border-bottom:1px solid var(--rule);}
+.mockup-tab{padding:10px 16px;font-family:var(--mono);font-size:9px;letter-spacing:0.08em;color:var(--text3);}
+.mockup-tab.act{color:var(--accent);border-bottom:2px solid var(--accent);margin-bottom:-1px;}
+.mockup-body{display:flex;height:320px;}
+.mockup-list{width:180px;border-right:1px solid var(--rule);overflow:hidden;}
+.mockup-row{padding:12px 14px;border-bottom:1px solid var(--rule2);display:flex;flex-direction:column;gap:3px;}
+.mockup-row.sel{background:var(--surface);}
+.m-from{font-size:11px;font-weight:500;color:var(--text);}
+.m-subj{font-size:10px;color:var(--text3);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.m-badge{font-family:var(--mono);font-size:8px;padding:1px 5px;border-radius:4px;width:fit-content;background:rgba(200,169,110,0.12);color:var(--accent);}
+.mockup-detail{flex:1;padding:16px;}
+.m-header{font-family:var(--serif);font-size:15px;font-weight:400;color:var(--text);margin-bottom:8px;line-height:1.3;}
+.m-meta{font-family:var(--mono);font-size:9px;color:var(--text3);margin-bottom:12px;}
+.m-ai-panel{background:rgba(200,169,110,0.06);border:1px solid rgba(200,169,110,0.15);border-radius:7px;padding:10px 12px;margin-bottom:10px;}
+.m-ai-label{font-family:var(--mono);font-size:8px;letter-spacing:0.12em;color:var(--accent);margin-bottom:4px;}
+.m-ai-text{font-size:11px;color:var(--text2);line-height:1.5;}
+.m-chip-row{display:flex;gap:5px;flex-wrap:wrap;}
+.m-chip{font-family:var(--mono);font-size:8px;padding:2px 7px;border-radius:8px;border:1px solid var(--rule);color:var(--text3);}
+.m-chip.red{border-color:rgba(232,93,47,0.3);color:#f87171;background:rgba(232,93,47,0.08);}
+.m-chip.gold{border-color:rgba(200,169,110,0.3);color:var(--accent);background:rgba(200,169,110,0.08);}
+.m-chip.blue{border-color:rgba(59,130,246,0.3);color:#93c5fd;background:rgba(59,130,246,0.08);}
+
+/* MARQUEE */
+.marquee-strip{border-top:1px solid var(--rule);border-bottom:1px solid var(--rule);background:var(--deep);overflow:hidden;height:40px;position:relative;z-index:2;}
+.marquee-inner{display:flex;white-space:nowrap;animation:marquee 30s linear infinite;}
+@keyframes marquee{from{transform:translateX(0);}to{transform:translateX(-50%);}}
+.marquee-item{display:flex;align-items:center;gap:10px;padding:0 28px;height:40px;font-family:var(--mono);font-size:9px;letter-spacing:0.12em;text-transform:uppercase;color:var(--text3);}
+.marquee-sep{color:var(--accent);}
+
+/* SECTIONS */
+.section{padding:100px 80px;}
+.section-label{font-family:var(--mono);font-size:9px;letter-spacing:0.2em;text-transform:uppercase;color:var(--accent);margin-bottom:16px;display:flex;align-items:center;gap:10px;}
+.section-label::before{content:'';display:block;width:20px;height:1px;background:var(--accent);}
+.section-title{font-family:var(--serif);font-size:clamp(34px,4vw,54px);font-weight:300;color:var(--text);letter-spacing:-0.02em;line-height:1.1;margin-bottom:16px;}
+.section-title em{font-style:italic;color:var(--accent);}
+.section-sub{font-size:15px;color:var(--text2);line-height:1.7;max-width:520px;}
+
+/* FEATURES GRID */
+.features-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;margin-top:64px;background:var(--rule);border:1px solid var(--rule);border-radius:14px;overflow:hidden;}
+.feat-card{background:var(--panel);padding:36px 32px;transition:background 0.2s;}
+.feat-card:hover{background:var(--surface);}
+.feat-icon{width:44px;height:44px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:20px;margin-bottom:20px;border:1px solid var(--rule);background:var(--deep);}
+.feat-title{font-family:var(--serif);font-size:20px;font-weight:400;color:var(--text);margin-bottom:10px;line-height:1.2;}
+.feat-body{font-size:13px;color:var(--text2);line-height:1.7;}
+
+/* INTEGRATIONS */
+.integrations-section{background:var(--deep);}
+.int-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:56px;}
+.int-card{background:var(--panel);border:1px solid var(--rule);border-radius:14px;padding:24px;display:flex;flex-direction:column;align-items:center;gap:10px;transition:all 0.2s;}
+.int-card:hover{border-color:rgba(200,169,110,0.3);transform:translateY(-2px);}
+.int-logo{font-size:28px;}
+.int-name{font-family:var(--mono);font-size:10px;letter-spacing:0.08em;color:var(--text2);}
+.int-status{font-family:var(--mono);font-size:8px;padding:2px 8px;border-radius:8px;background:rgba(34,197,94,0.1);color:var(--green);border:1px solid rgba(34,197,94,0.2);}
+.int-status.soon{background:rgba(200,169,110,0.08);color:var(--accent);border-color:rgba(200,169,110,0.2);}
+
+/* CTA BAND & FOOTER */
+.cta-band{background:var(--panel);border-top:1px solid var(--rule);border-bottom:1px solid var(--rule);padding:80px;display:flex;align-items:center;justify-content:space-between;gap:40px;}
+.big-title{font-family:var(--serif);font-size:clamp(30px,4vw,50px);font-weight:300;line-height:1.1;letter-spacing:-0.02em;}
+.big-title em{font-style:italic;color:var(--accent);}
+.cta-band-right{display:flex;gap:12px;flex-shrink:0;}
+footer{padding:32px 80px;display:flex;align-items:center;justify-content:space-between;background:var(--black);}
+.footer-brand{font-family:var(--serif);font-size:16px;font-weight:500;color:var(--text3);}
+.footer-brand span{color:var(--accent);}
+.footer-legal{font-family:var(--mono);font-size:9px;color:var(--text4);letter-spacing:0.06em;}
+.footer-legal a{color:var(--accent);text-decoration:none;}
+
+/* MODAL OVERLAY */
+.modal-overlay{position:fixed;inset:0;z-index:1000;background:rgba(8,9,11,0.92);backdrop-filter:blur(16px);display:none;align-items:flex-start;justify-content:center;overflow-y:auto;padding:40px 20px 80px;}
+.modal-overlay.open{display:flex;}
+
+/* AUTH MODAL */
+.auth-modal{width:100%;max-width:940px;background:var(--panel);border:1px solid var(--rule);border-radius:20px;overflow:hidden;display:grid;grid-template-columns:280px 1fr;box-shadow:0 40px 120px rgba(0,0,0,0.8);margin:auto;}
+.auth-sidebar{background:var(--deep);border-right:1px solid var(--rule);padding:40px 32px;display:flex;flex-direction:column;}
+.auth-sidebar-logo{font-family:var(--serif);font-size:22px;font-weight:500;color:var(--text);margin-bottom:3px;}
+.auth-sidebar-logo span{color:var(--accent);}
+.auth-sidebar-tag{font-family:var(--mono);font-size:8px;letter-spacing:0.16em;text-transform:uppercase;color:var(--text3);margin-bottom:32px;}
+.sidebar-features{list-style:none;display:flex;flex-direction:column;gap:14px;margin-top:auto;}
+.sidebar-feat{display:flex;align-items:flex-start;gap:10px;font-size:12px;color:var(--text2);line-height:1.4;}
+.sf-icon{width:20px;height:20px;border-radius:5px;background:rgba(200,169,110,0.1);border:1px solid rgba(200,169,110,0.2);display:flex;align-items:center;justify-content:center;font-size:10px;flex-shrink:0;margin-top:1px;}
+.auth-sidebar-footer{margin-top:32px;padding-top:20px;border-top:1px solid var(--rule);font-family:var(--mono);font-size:8px;color:var(--text4);letter-spacing:0.06em;line-height:1.7;}
+
+/* FORM AREA */
+.auth-form-area{padding:40px 44px;overflow-y:auto;max-height:92vh;}
+.auth-steps{display:none;}
+.auth-steps.active{display:block;}
+.step-indicator{display:flex;align-items:center;gap:8px;margin-bottom:28px;}
+.step-pip{width:8px;height:8px;border-radius:50%;background:var(--rule);transition:all 0.2s;}
+.step-pip.done{background:var(--green);}
+.step-pip.active{background:var(--accent);width:20px;border-radius:4px;}
+.step-sep{flex:1;height:1px;background:var(--rule);}
+.progress-bar-wrap{height:2px;background:var(--rule);margin-bottom:24px;border-radius:1px;overflow:hidden;}
+.progress-bar-fill{height:100%;background:var(--accent);transition:width 0.4s ease;border-radius:1px;}
+.auth-tabs{display:flex;gap:0;margin-bottom:24px;}
+.auth-tab{flex:1;padding:10px;text-align:center;font-family:var(--mono);font-size:10px;letter-spacing:0.08em;text-transform:uppercase;color:var(--text3);cursor:pointer;border:none;background:transparent;border-bottom:2px solid transparent;transition:all 0.15s;}
+.auth-tab.active{color:var(--accent);border-bottom-color:var(--accent);}
+.form-title{font-family:var(--serif);font-size:28px;font-weight:300;color:var(--text);margin-bottom:6px;letter-spacing:-0.01em;}
+.form-sub{font-size:12px;color:var(--text3);margin-bottom:24px;line-height:1.5;}
+.field{margin-bottom:14px;}
+.field-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.field label{display:block;font-family:var(--mono);font-size:9px;letter-spacing:0.12em;text-transform:uppercase;color:var(--text3);margin-bottom:5px;}
+.req{color:var(--accent);}
+.input{width:100%;background:var(--surface);border:1px solid var(--rule);border-radius:8px;padding:11px 14px;font-size:13px;font-family:var(--sans);color:var(--text);outline:none;transition:border-color 0.15s;}
+.input:focus{border-color:rgba(200,169,110,0.5);}
+.input::placeholder{color:var(--text4);}
+.pw-strength{height:3px;border-radius:2px;margin-top:6px;background:var(--rule);overflow:hidden;}
+.pw-strength-bar{height:100%;border-radius:2px;width:0;transition:all 0.3s;}
+
+/* INTEGRATION PICKER */
+.int-picker-label{font-family:var(--mono);font-size:9px;letter-spacing:0.12em;text-transform:uppercase;color:var(--text3);margin-bottom:10px;}
+.int-picker-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:8px;}
+.int-toggle{display:flex;flex-direction:column;align-items:center;gap:6px;padding:14px 10px;border-radius:10px;border:1px solid var(--rule);background:var(--surface);cursor:pointer;transition:all 0.15s;text-align:center;position:relative;user-select:none;}
+.int-toggle:hover{border-color:rgba(200,169,110,0.3);}
+.int-toggle.selected{border-color:rgba(200,169,110,0.5);background:rgba(200,169,110,0.07);}
+.int-toggle.selected::after{content:'✓';position:absolute;top:6px;right:8px;font-size:9px;color:var(--accent);font-family:var(--mono);}
+.it-emoji{font-size:22px;}
+.it-name{font-family:var(--mono);font-size:9px;letter-spacing:0.06em;color:var(--text2);}
+.it-type{font-size:9px;color:var(--text3);}
+.int-picker-hint{font-size:11px;color:var(--text3);margin-bottom:18px;line-height:1.5;}
+
+/* TERMS */
+.terms-box{background:var(--deep);border:1px solid var(--rule);border-radius:10px;height:200px;overflow-y:auto;padding:18px 20px;margin-bottom:12px;font-size:11px;color:var(--text3);line-height:1.75;}
+.terms-box::-webkit-scrollbar{width:4px;}
+.terms-box::-webkit-scrollbar-thumb{background:var(--lift);border-radius:2px;}
+.terms-box h3{font-family:var(--mono);font-size:9px;letter-spacing:0.1em;text-transform:uppercase;color:var(--text2);margin:14px 0 5px;}
+.terms-box h3:first-child{margin-top:0;}
+.terms-box p{margin-bottom:8px;}
+.terms-expand-btn{display:inline-flex;align-items:center;gap:6px;font-family:var(--mono);font-size:9px;letter-spacing:0.08em;color:var(--accent);cursor:pointer;border:none;background:none;text-transform:uppercase;margin-bottom:14px;transition:opacity 0.15s;}
+.terms-expand-btn:hover{opacity:0.75;}
+.terms-check-row{display:flex;align-items:flex-start;gap:10px;margin-bottom:8px;}
+.terms-check-row input[type=checkbox]{margin-top:2px;flex-shrink:0;accent-color:var(--accent);width:14px;height:14px;cursor:pointer;}
+.terms-check-row label{font-size:12px;color:var(--text2);line-height:1.5;cursor:pointer;}
+.terms-check-row label a{color:var(--accent);text-decoration:none;}
+
+/* ALERTS */
+.alert{border-radius:8px;padding:10px 14px;margin-bottom:14px;font-size:12px;line-height:1.5;display:none;}
+.alert.show{display:block;}
+.alert-err{background:rgba(232,93,47,0.08);border:1px solid rgba(232,93,47,0.25);color:#f87171;}
+.alert-ok{background:rgba(34,197,94,0.08);border:1px solid rgba(34,197,94,0.25);color:#86efac;}
+.submit-btn{width:100%;padding:13px;background:var(--accent);color:var(--black);font-family:var(--mono);font-size:11px;font-weight:500;letter-spacing:0.1em;text-transform:uppercase;border:none;border-radius:8px;cursor:pointer;transition:all 0.15s;margin-top:8px;}
+.submit-btn:hover{background:var(--accentl);}
+.submit-btn:disabled{opacity:0.4;cursor:default;}
+.btn-back{background:transparent;border:1px solid var(--rule);color:var(--text2);font-family:var(--mono);font-size:10px;padding:10px 18px;border-radius:7px;cursor:pointer;letter-spacing:0.08em;transition:all 0.15s;}
+.btn-back:hover{border-color:var(--accent);color:var(--accent);}
+.nav-row{display:flex;justify-content:space-between;align-items:center;margin-top:18px;}
+.close-modal{position:fixed;top:20px;right:20px;width:36px;height:36px;border-radius:50%;background:var(--lift);border:1px solid var(--rule);color:var(--text2);font-size:16px;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all 0.15s;z-index:10;}
+.close-modal:hover{background:var(--surface);color:var(--text);}
+
+/* FULL TERMS MODAL */
+.terms-full-modal{position:fixed;inset:0;z-index:2000;background:rgba(8,9,11,0.96);backdrop-filter:blur(20px);display:none;align-items:flex-start;justify-content:center;padding:40px 20px;overflow-y:auto;}
+.terms-full-modal.open{display:flex;}
+.terms-full-box{width:100%;max-width:820px;margin:auto;background:var(--panel);border:1px solid var(--rule);border-radius:16px;overflow:hidden;}
+.terms-full-header{padding:24px 32px;border-bottom:1px solid var(--rule);display:flex;justify-content:space-between;align-items:center;background:var(--deep);}
+.terms-full-title{font-family:var(--serif);font-size:24px;font-weight:300;color:var(--text);}
+.terms-full-body{padding:32px;font-size:12px;color:var(--text2);line-height:1.85;max-height:72vh;overflow-y:auto;}
+.terms-full-body::-webkit-scrollbar{width:4px;}
+.terms-full-body::-webkit-scrollbar-thumb{background:var(--lift);border-radius:2px;}
+.terms-full-body h2{font-family:var(--serif);font-size:20px;font-weight:400;color:var(--text);margin:28px 0 10px;border-bottom:1px solid var(--rule);padding-bottom:8px;}
+.terms-full-body h3{font-family:var(--mono);font-size:10px;letter-spacing:0.12em;text-transform:uppercase;color:var(--accent);margin:18px 0 7px;}
+.terms-full-body p{margin-bottom:12px;}
+.terms-full-body ul{padding-left:20px;margin-bottom:12px;}
+.terms-full-body li{margin-bottom:6px;}
+.terms-full-footer{padding:20px 32px;border-top:1px solid var(--rule);display:flex;justify-content:flex-end;}
+
+/* ANIMATIONS */
+.fade-in{opacity:0;transform:translateY(20px);animation:fadein 0.6s ease forwards;}
+@keyframes fadein{to{opacity:1;transform:translateY(0);}}
+.fade-in-1{animation-delay:0.1s;}.fade-in-2{animation-delay:0.25s;}.fade-in-3{animation-delay:0.4s;}.fade-in-4{animation-delay:0.55s;}.fade-in-5{animation-delay:0.7s;}
+
+/* RESPONSIVE */
+@media(max-width:900px){
+  .hero{grid-template-columns:1fr;}.hero-right{display:none;}.hero-left{padding:100px 32px 60px;}
+  nav{padding:0 24px;}.nav-links{display:none;}
+  .features-grid{grid-template-columns:1fr;}.int-grid{grid-template-columns:repeat(2,1fr);}
+  .section{padding:60px 32px;}.cta-band{padding:60px 32px;flex-direction:column;align-items:flex-start;}
+  footer{padding:24px 32px;flex-direction:column;gap:10px;}
+  .auth-modal{grid-template-columns:1fr;}.auth-sidebar{display:none;}.auth-form-area{padding:32px 24px;}
+  .field-row{grid-template-columns:1fr;}.int-picker-grid{grid-template-columns:repeat(2,1fr);}
+}
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-brand">
+    <div class="nav-brand-name">Pulse<span>Intel</span></div>
+    <div class="nav-brand-sub">by Augmentation Consulting Group</div>
+  </div>
+  <div class="nav-links">
+    <a href="#features" class="nav-link">Features</a>
+    <a href="#integrations" class="nav-link">Integrations</a>
+    <a href="#" class="nav-link" onclick="openTermsFull(event)">Terms</a>
+  </div>
+  <button class="nav-cta" onclick="openAuth('login')">Sign in</button>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-bg"></div>
+  <div class="hero-glow"></div>
+  <div class="hero-glow2"></div>
+  <div class="hero-left">
+    <div class="hero-eyebrow fade-in">An ACG Intelligence Product</div>
+    <h1 class="hero-headline fade-in fade-in-1">One inbox.<br>Every <em>signal.</em><br>Zero noise.</h1>
+    <p class="hero-subhead fade-in fade-in-2">AI-powered communication intelligence for enterprise teams.</p>
+    <p class="hero-body fade-in fade-in-3">Pulse Intelligence unifies email, chat, and meetings into a single AI-prioritized workspace. Built for decision-makers who need to act faster — not read more.</p>
+    <div class="hero-stats fade-in fade-in-3">
+      <div class="stat"><span class="stat-num">4+</span><span class="stat-label">Platforms unified</span></div>
+      <div class="stat"><span class="stat-num">92%</span><span class="stat-label">Noise filtered</span></div>
+      <div class="stat"><span class="stat-num">&lt;2s</span><span class="stat-label">AI draft time</span></div>
+    </div>
+    <div class="hero-actions fade-in fade-in-4">
+      <button class="btn-primary" onclick="openAuth('signup')">Request access</button>
+      <button class="btn-ghost"   onclick="openAuth('login')">Sign in →</button>
+    </div>
+  </div>
+  <div class="hero-right">
+    <div class="app-mockup fade-in fade-in-5">
+      <div class="mockup-bar">
+        <div class="mockup-dot" style="background:#e85d2f"></div>
+        <div class="mockup-dot" style="background:#f59e0b"></div>
+        <div class="mockup-dot" style="background:#22c55e"></div>
+      </div>
+      <div class="mockup-tabs">
+        <div class="mockup-tab act">✉ Email</div>
+        <div class="mockup-tab">💬 Chat</div>
+        <div class="mockup-tab">📅 Meetings</div>
+      </div>
+      <div class="mockup-body">
+        <div class="mockup-list">
+          <div class="mockup-row sel"><div class="m-from">Sarah Chen</div><div class="m-subj">Contract renewal — EOD</div><div class="m-badge">URGENT</div></div>
+          <div class="mockup-row"><div class="m-from">Marcus Webb</div><div class="m-subj">Q3 board deck sign-off</div></div>
+          <div class="mockup-row"><div class="m-from">Jordan Suter</div><div class="m-subj">Q4 ops spend review</div></div>
+          <div class="mockup-row"><div class="m-from">WellMed PMO</div><div class="m-subj">Phase 2 design notes</div></div>
+        </div>
+        <div class="mockup-detail">
+          <div class="m-header">Contract renewal — decision by EOD</div>
+          <div class="m-meta">Sarah Chen · s.chen@vendor.com · 9:14 AM</div>
+          <div class="m-ai-panel"><div class="m-ai-label">✦ AI Analysis</div><div class="m-ai-text">Vendor needs yes/no by EOD to lock $4,200/mo renewal — 12% increase if missed.</div></div>
+          <div class="m-chip-row"><div class="m-chip red">Urgent</div><div class="m-chip gold">Action required</div><div class="m-chip blue">Outlook · Email</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- MARQUEE -->
+<div class="marquee-strip"><div class="marquee-inner" id="marquee"></div></div>
+
+<!-- FEATURES -->
+<section class="section" id="features">
+  <div class="section-label">Platform capabilities</div>
+  <h2 class="section-title">Built for how executives <em>actually</em> work</h2>
+  <p class="section-sub">Not another inbox. A command layer over every communication channel your organization depends on.</p>
+  <div class="features-grid">
+    <div class="feat-card"><div class="feat-icon">✦</div><div class="feat-title">AI Priority Scoring</div><div class="feat-body">Every message analyzed and scored 1–100 for urgency and business impact. High-signal items surface instantly — low-signal disappears.</div></div>
+    <div class="feat-card"><div class="feat-icon">✍</div><div class="feat-title">Personalized Draft Replies</div><div class="feat-body">Replies written in your voice for each platform. Email reads like email; Slack reads like Slack. Trained on your tone and preferences.</div></div>
+    <div class="feat-card"><div class="feat-icon">📊</div><div class="feat-title">Daily Intelligence Reports</div><div class="feat-body">Cross-platform executive briefings generated every morning. Know what demands attention before you open a single app.</div></div>
+    <div class="feat-card"><div class="feat-icon">📅</div><div class="feat-title">Meeting Intelligence</div><div class="feat-body">Full meeting tracker with agenda, prep checklist, attendees, linked messages, and AI briefings for every call.</div></div>
+    <div class="feat-card"><div class="feat-icon">🔒</div><div class="feat-title">Enterprise Security</div><div class="feat-body">AES-256 encrypted credential storage. Row-level security on every record. HIPAA-compatible architecture. Your data never trains models.</div></div>
+    <div class="feat-card"><div class="feat-icon">⚡</div><div class="feat-title">Real-Time Webhooks</div><div class="feat-body">Messages arrive the instant they hit your inbox — no polling, no refresh. Native push APIs for every connected platform.</div></div>
+  </div>
+</section>
+
+<!-- INTEGRATIONS -->
+<section class="section integrations-section" id="integrations">
+  <div class="section-label">Integrations</div>
+  <h2 class="section-title">Every platform your team <em>runs on</em></h2>
+  <p class="section-sub">Connect the tools you already use. Pulse normalizes everything into one intelligent feed — no workflow changes required.</p>
+  <div class="int-grid">
+    <div class="int-card"><div class="int-logo">💬</div><div class="int-name">Microsoft Teams</div><div class="int-status">Live</div></div>
+    <div class="int-card"><div class="int-logo">#</div><div class="int-name">Slack</div><div class="int-status">Live</div></div>
+    <div class="int-card"><div class="int-logo">✉</div><div class="int-name">Microsoft Outlook</div><div class="int-status">Live</div></div>
+    <div class="int-card"><div class="int-logo">📧</div><div class="int-name">Gmail</div><div class="int-status">Live</div></div>
+    <div class="int-card"><div class="int-logo">🟢</div><div class="int-name">Google Meet</div><div class="int-status soon">Coming Soon</div></div>
+    <div class="int-card"><div class="int-logo">🎥</div><div class="int-name">Zoom</div><div class="int-status">Live</div></div>
+    <div class="int-card"><div class="int-logo">📁</div><div class="int-name">SharePoint</div><div class="int-status soon">Coming Soon</div></div>
+    <div class="int-card"><div class="int-logo">🗂</div><div class="int-name">Google Drive</div><div class="int-status soon">Coming Soon</div></div>
+  </div>
+</section>
+
+<!-- CTA BAND -->
+<div class="cta-band">
+  <div class="cta-band-left"><div class="big-title">Ready to reclaim<br><em>your attention?</em></div></div>
+  <div class="cta-band-right">
+    <button class="btn-primary" onclick="openAuth('signup')">Get started</button>
+    <button class="btn-ghost"   onclick="openAuth('login')">Sign in</button>
+  </div>
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-brand">Pulse<span>Intel</span> — An Augmentation Consulting Group Product</div>
+  <div class="footer-legal">© 2025 Augmentation Consulting Group Inc. · All rights reserved · <a href="#" onclick="openTermsFull(event)">Terms of Service</a> · <a href="#" onclick="openTermsFull(event)">Privacy Policy</a></div>
+</footer>
+
+<!-- ═══════════════════════════════
+     AUTH MODAL
+═══════════════════════════════ -->
+<div class="modal-overlay" id="auth-modal">
+  <div class="close-modal" onclick="closeAuth()">✕</div>
+  <div class="auth-modal">
+    <div class="auth-sidebar">
+      <div class="auth-sidebar-logo">Pulse<span>Intel</span></div>
+      <div class="auth-sidebar-tag">by Augmentation Consulting Group</div>
+      <ul class="sidebar-features">
+        <li class="sidebar-feat"><div class="sf-icon">✦</div><span>AI-prioritized inbox across all platforms</span></li>
+        <li class="sidebar-feat"><div class="sf-icon">✍</div><span>Personalized drafts written in your voice</span></li>
+        <li class="sidebar-feat"><div class="sf-icon">📅</div><span>Meeting tracker with AI briefings</span></li>
+        <li class="sidebar-feat"><div class="sf-icon">📊</div><span>Daily cross-platform intelligence reports</span></li>
+        <li class="sidebar-feat"><div class="sf-icon">🔒</div><span>Enterprise-grade encrypted security</span></li>
+      </ul>
+      <div class="auth-sidebar-footer">
+        Augmentation Consulting Group Inc.<br>
+        Veteran-Owned · Connecticut, USA<br>
+        SOC 2 Compatible · HIPAA Architecture
+      </div>
+    </div>
+
+    <div class="auth-form-area">
+      <div class="progress-bar-wrap"><div class="progress-bar-fill" id="progress-bar" style="width:33%"></div></div>
+
+      <!-- STEP 1: Account -->
+      <div class="auth-steps active" id="step-account">
+        <div class="step-indicator">
+          <div class="step-pip active" id="pip-1"></div>
+          <div class="step-sep"></div>
+          <div class="step-pip" id="pip-2"></div>
+          <div class="step-sep"></div>
+          <div class="step-pip" id="pip-3"></div>
+        </div>
+        <div class="auth-tabs">
+          <button class="auth-tab active" id="tab-signup" onclick="switchAuthTab('signup')">Create account</button>
+          <button class="auth-tab"        id="tab-login"  onclick="switchAuthTab('login')">Sign in</button>
+        </div>
+
+        <!-- SIGNUP FORM -->
+        <div id="signup-form">
+          <div class="form-title">Create your account</div>
+          <div class="form-sub">Start with your information — takes about 90 seconds.</div>
+          <div id="alert-signup" class="alert alert-err"></div>
+          <div class="field-row">
+            <div class="field"><label>First name <span class="req">*</span></label><input class="input" id="s-first" type="text" placeholder="Alex" autocomplete="given-name"/></div>
+            <div class="field"><label>Last name <span class="req">*</span></label><input class="input" id="s-last" type="text" placeholder="Rivera" autocomplete="family-name"/></div>
+          </div>
+          <div class="field-row">
+            <div class="field"><label>Job title</label><input class="input" id="s-title" type="text" placeholder="VP Operations"/></div>
+            <div class="field"><label>Company</label><input class="input" id="s-company" type="text" placeholder="Acme Corp"/></div>
+          </div>
+          <div class="field"><label>Work email <span class="req">*</span></label><input class="input" id="s-email" type="email" placeholder="alex@company.com" autocomplete="email"/></div>
+          <div class="field">
+            <label>Password <span class="req">*</span> <span style="color:var(--text4);font-size:8px;font-weight:300;"> — min 8 characters</span></label>
+            <input class="input" id="s-pass" type="password" placeholder="••••••••••••" autocomplete="new-password" oninput="checkPwStrength(this.value)"/>
+            <div class="pw-strength"><div class="pw-strength-bar" id="pw-bar"></div></div>
+          </div>
+          <button class="submit-btn" onclick="goToStep2()">Continue — Choose integrations →</button>
+        </div>
+
+        <!-- LOGIN FORM -->
+        <div id="login-form" style="display:none;">
+          <div class="form-title">Welcome back</div>
+          <div class="form-sub">Sign in to your Pulse Intelligence account.</div>
+          <div id="alert-login" class="alert alert-err"></div>
+          <div class="field"><label>Email</label><input class="input" id="l-email" type="email" placeholder="alex@company.com" autocomplete="email"/></div>
+          <div class="field"><label>Password</label><input class="input" id="l-pass" type="password" placeholder="••••••••" autocomplete="current-password" onkeydown="if(event.key==='Enter')doLogin()"/></div>
+          <button class="submit-btn" onclick="doLogin()">Sign in to Pulse →</button>
+        </div>
+      </div>
+
+      <!-- STEP 2: Integrations -->
+      <div class="auth-steps" id="step-integrations">
+        <div class="step-indicator">
+          <div class="step-pip done"></div>
+          <div class="step-sep"></div>
+          <div class="step-pip active"></div>
+          <div class="step-sep"></div>
+          <div class="step-pip"></div>
+        </div>
+        <div class="form-title">Your integrations</div>
+        <div class="form-sub">Select the platforms your team uses. You'll connect each one with OAuth or a token after signing in — selecting here activates the connectors in your workspace.</div>
+        <div id="alert-int" class="alert alert-err"></div>
+        <div class="int-picker-label">Communication &amp; meeting platforms</div>
+        <div class="int-picker-grid" id="int-picker">
+          <div class="int-toggle" data-int="teams"   onclick="toggleInt(this)"><div class="it-emoji">💬</div><div class="it-name">Teams</div><div class="it-type">Chat · Meetings</div></div>
+          <div class="int-toggle" data-int="slack"   onclick="toggleInt(this)"><div class="it-emoji">#</div><div class="it-name">Slack</div><div class="it-type">Chat · Channels</div></div>
+          <div class="int-toggle" data-int="outlook" onclick="toggleInt(this)"><div class="it-emoji">✉</div><div class="it-name">Outlook</div><div class="it-type">Email</div></div>
+          <div class="int-toggle" data-int="gmail"   onclick="toggleInt(this)"><div class="it-emoji">📧</div><div class="it-name">Gmail</div><div class="it-type">Email</div></div>
+          <div class="int-toggle" data-int="zoom"    onclick="toggleInt(this)"><div class="it-emoji">🎥</div><div class="it-name">Zoom</div><div class="it-type">Video Meetings</div></div>
+          <div class="int-toggle" data-int="gmeet"   onclick="toggleInt(this)"><div class="it-emoji">🟢</div><div class="it-name">Google Meet</div><div class="it-type">Video Meetings</div></div>
+          <div class="int-toggle" data-int="sharepoint" onclick="toggleInt(this)"><div class="it-emoji">📁</div><div class="it-name">SharePoint</div><div class="it-type">Docs · Files</div></div>
+          <div class="int-toggle" data-int="gdrive"  onclick="toggleInt(this)"><div class="it-emoji">🗂</div><div class="it-name">Google Drive</div><div class="it-type">Docs · Files</div></div>
+          <div class="int-toggle" data-int="calendar" onclick="toggleInt(this)"><div class="it-emoji">📆</div><div class="it-name">Google Calendar</div><div class="it-type">Calendar</div></div>
+        </div>
+        <div class="int-picker-hint">No tokens required now. Integrations can be configured and changed anytime in your Settings page after signing in.</div>
+        <div class="nav-row">
+          <button class="btn-back" onclick="goToStep1()">← Back</button>
+          <button class="submit-btn" style="width:auto;padding:13px 28px;" onclick="goToStep3()">Continue — Review terms →</button>
+        </div>
+      </div>
+
+      <!-- STEP 3: Terms -->
+      <div class="auth-steps" id="step-terms">
+        <div class="step-indicator">
+          <div class="step-pip done"></div>
+          <div class="step-sep"></div>
+          <div class="step-pip done"></div>
+          <div class="step-sep"></div>
+          <div class="step-pip active"></div>
+        </div>
+        <div class="form-title">Terms &amp; agreements</div>
+        <div class="form-sub">Read and accept all agreements before creating your account. All four checkboxes are required.</div>
+        <div id="alert-terms" class="alert alert-err"></div>
+
+        <div class="terms-box">
+          <h3>§ 1. Acceptance of Terms</h3>
+          <p>By accessing Pulse Intelligence ("the Platform"), a product of Augmentation Consulting Group Inc. ("ACG"), you agree to be bound by these Terms of Service, our Privacy Policy, and all applicable laws. If you do not agree, you are prohibited from using the Platform.</p>
+          <h3>§ 2. Description of Service</h3>
+          <p>Pulse Intelligence is an AI-powered enterprise communication intelligence platform that aggregates, analyzes, and prioritizes communications across email, chat, and meeting platforms using Anthropic's Claude API and other AI technologies.</p>
+          <h3>§ 3. Account Security</h3>
+          <p>You are responsible for maintaining confidentiality of your credentials. Notify ACG immediately at security@augmentationconsultinggroup.com of any unauthorized access. ACG is not liable for loss from unauthorized account use.</p>
+          <h3>§ 4. Authorized Use &amp; Restrictions</h3>
+          <p>You may not: reverse engineer the Platform; transmit unlawful content; attempt unauthorized system access; resell or sublicense the Platform; process Protected Health Information without an executed Business Associate Agreement; use automated tools to scrape or abuse the Platform.</p>
+          <h3>§ 5. Data Privacy &amp; Security</h3>
+          <p>You retain full ownership of your communication content. ACG does not sell or share your data with third parties for commercial purposes. All credentials are AES-256 encrypted. AI processing via Anthropic is subject to Anthropic's Enterprise Data Privacy Policy — your data does not train AI models. Communication data is retained for 90 days post-termination, then permanently deleted upon request.</p>
+          <h3>§ 6. Intellectual Property</h3>
+          <p>All Platform code, design, algorithms, trademarks, and the names "Pulse Intelligence" and "Augmentation Consulting Group" are owned exclusively by ACG and protected by U.S. and international IP law. You receive a limited, non-exclusive, revocable license to use the Platform for internal business purposes only.</p>
+          <h3>§ 7. Third-Party Integrations</h3>
+          <p>Use of Microsoft, Google, Slack, and Zoom integrations is subject to each platform's terms. ACG is not responsible for third-party outages, API changes, or data handling. All OAuth tokens are stored AES-256 encrypted and never in plaintext.</p>
+          <h3>§ 8. DISCLAIMER OF WARRANTIES</h3>
+          <p>THE PLATFORM IS PROVIDED "AS IS" WITHOUT WARRANTIES OF ANY KIND. ACG EXPRESSLY DISCLAIMS ALL IMPLIED WARRANTIES INCLUDING MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, AND NON-INFRINGEMENT. AI-GENERATED CONTENT IS ADVISORY ONLY — ACG MAKES NO WARRANTY AS TO ITS ACCURACY OR FITNESS FOR ANY BUSINESS DECISION.</p>
+          <h3>§ 9. LIMITATION OF LIABILITY</h3>
+          <p>TO THE FULLEST EXTENT PERMITTED BY LAW, ACG SHALL NOT BE LIABLE FOR INDIRECT, INCIDENTAL, SPECIAL, CONSEQUENTIAL, OR PUNITIVE DAMAGES. ACG'S TOTAL CUMULATIVE LIABILITY SHALL NOT EXCEED AMOUNTS PAID BY YOU IN THE PRECEDING 12 MONTHS OR $100, WHICHEVER IS GREATER.</p>
+          <h3>§ 10. Indemnification</h3>
+          <p>You agree to defend and hold harmless ACG and its officers, directors, and employees from any claims arising from your violation of these Terms, misuse of the Platform, or infringement of third-party rights.</p>
+          <h3>§ 11. HIPAA Notice</h3>
+          <p>Processing Protected Health Information requires an executed Business Associate Agreement (BAA) with ACG. Contact compliance@augmentationconsultinggroup.com. Processing PHI without a BAA constitutes material breach of these Terms.</p>
+          <h3>§ 12. Governing Law &amp; Arbitration</h3>
+          <p>These Terms are governed by Connecticut law. Disputes shall be resolved by binding arbitration administered by the AAA in Hartford County, Connecticut. Class action waiver applies. You waive jury trial rights for all disputes.</p>
+          <h3>§ 13. Contact</h3>
+          <p>Augmentation Consulting Group Inc. · Connecticut, USA · legal@augmentationconsultinggroup.com · Last updated: January 2025 · v1.2</p>
+        </div>
+
+        <button class="terms-expand-btn" onclick="openTermsFull(event)">▤ Read complete Terms of Service in full view</button>
+
+        <div class="terms-check-row">
+          <input type="checkbox" id="chk-tos" onchange="checkAllTerms()"/>
+          <label for="chk-tos">I have read, understood, and agree to the <a href="#" onclick="openTermsFull(event)">Terms of Service</a> — including §8 Disclaimer of Warranties, §9 Limitation of Liability, and §10 Indemnification.</label>
+        </div>
+        <div class="terms-check-row">
+          <input type="checkbox" id="chk-privacy" onchange="checkAllTerms()"/>
+          <label for="chk-privacy">I agree to the collection and processing of my communication metadata as described in the Privacy Policy for the purpose of delivering the Pulse Intelligence service.</label>
+        </div>
+        <div class="terms-check-row">
+          <input type="checkbox" id="chk-ai" onchange="checkAllTerms()"/>
+          <label for="chk-ai">I understand that AI-generated content (analyses, drafts, reports, briefings) is advisory in nature, and I accept full responsibility for any business decisions made based on AI-generated content.</label>
+        </div>
+        <div class="terms-check-row">
+          <input type="checkbox" id="chk-age" onchange="checkAllTerms()"/>
+          <label for="chk-age">I confirm I am at least 18 years of age and am either the authorized individual user or am duly authorized to accept these Terms on behalf of my organization.</label>
+        </div>
+
+        <div class="nav-row" style="margin-top:20px;">
+          <button class="btn-back" onclick="goToStep2()">← Back</button>
+          <button class="submit-btn" id="create-account-btn" style="width:auto;padding:13px 32px;" onclick="doSignup()" disabled>Create account →</button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- FULL TERMS MODAL -->
+<div class="terms-full-modal" id="terms-full-modal">
+  <div class="terms-full-box">
+    <div class="terms-full-header">
+      <div class="terms-full-title">Terms of Service — Pulse Intelligence</div>
+      <button onclick="closeTermsFull()" style="background:none;border:none;color:var(--text2);font-size:20px;cursor:pointer;line-height:1;">✕</button>
+    </div>
+    <div class="terms-full-body">
+      <p style="color:var(--text3);font-family:var(--mono);font-size:9px;letter-spacing:0.1em;text-transform:uppercase;margin-bottom:24px;">Augmentation Consulting Group Inc. · Effective January 2025 · Version 1.2</p>
+      <h2>1. Acceptance of Terms</h2>
+      <p>By accessing or using Pulse Intelligence ("the Platform"), a product of Augmentation Consulting Group Inc. ("ACG," "we," "us," or "our"), you ("User," "Client," or "you") expressly agree to be bound by these Terms of Service ("Terms"), our Privacy Policy, Data Processing Agreement, and all applicable laws and regulations of the United States of America and the State of Connecticut.</p>
+      <p>If you are accepting these Terms on behalf of an organization, you represent and warrant that you have full legal authority to bind such organization. If you do not agree to all Terms, you are prohibited from accessing or using the Platform.</p>
+      <h2>2. Description of Service</h2>
+      <p>Pulse Intelligence is a proprietary AI-powered enterprise communication intelligence platform developed and maintained by Augmentation Consulting Group Inc. The Platform aggregates, analyzes, and presents communications from multiple enterprise platforms including Microsoft Teams, Microsoft Outlook, Slack, Gmail, Zoom, and Google Meet.</p>
+      <p>Core capabilities include AI-powered message prioritization and scoring; personalized AI-generated reply drafts; cross-platform daily intelligence reports; meeting tracking and AI briefing generation; real-time webhook-based message ingestion; and enterprise-grade security and access controls. The Platform utilizes Anthropic PBC's Claude API for AI capabilities.</p>
+      <h2>3. Account Registration and Security</h2>
+      <h3>3.1 Requirements</h3>
+      <p>You must be at least 18 years of age. You must provide accurate, complete, and current registration information and update it promptly. Business accounts require the registrant to be authorized to bind the organization.</p>
+      <h3>3.2 Credential Security</h3>
+      <p>You are responsible for maintaining the confidentiality and security of your login credentials. You agree to: use a strong, unique password; enable multi-factor authentication when available; notify ACG immediately at security@augmentationconsultinggroup.com of any suspected unauthorized access; ensure you log out at the end of each session. ACG will not be liable for any loss arising from unauthorized use of your account.</p>
+      <h3>3.3 Account Suspension and Termination</h3>
+      <p>ACG reserves the right to suspend or terminate any account that it believes, in its sole discretion, has violated these Terms, engaged in fraudulent activity, or poses a security or legal risk to the Platform, ACG, or other users.</p>
+      <h2>4. Authorized Use and Restrictions</h2>
+      <h3>4.1 Permitted Use</h3>
+      <p>The Platform is licensed exclusively for lawful internal business communication management and intelligence purposes. You may use the Platform to manage, analyze, and respond to your authorized business communications in accordance with these Terms.</p>
+      <h3>4.2 Prohibited Conduct</h3>
+      <p>You expressly agree NOT to:</p>
+      <ul>
+        <li>Reverse engineer, decompile, disassemble, or attempt to derive source code from any portion of the Platform;</li>
+        <li>Use the Platform to transmit unlawful, defamatory, harassing, abusive, threatening, obscene, or fraudulent content;</li>
+        <li>Interfere with or disrupt the integrity, security, or performance of the Platform or its underlying infrastructure;</li>
+        <li>Attempt to gain unauthorized access to any portion of the Platform, related systems, or networks;</li>
+        <li>Use bots, scrapers, crawlers, or automated means to access the Platform in a manner exceeding reasonable usage;</li>
+        <li>Resell, sublicense, commercially exploit, or create derivative works from the Platform without prior written authorization from ACG;</li>
+        <li>Use the Platform to engage in anti-competitive behavior or to gain unauthorized competitive intelligence;</li>
+        <li>Circumvent, disable, or interfere with security-related features of the Platform;</li>
+        <li>Violate any applicable law, regulation, third-party rights, or data protection requirements;</li>
+        <li>Process Protected Health Information (PHI) without an executed Business Associate Agreement (BAA) with ACG.</li>
+      </ul>
+      <h2>5. Data Privacy, Confidentiality, and Security</h2>
+      <h3>5.1 Data Ownership</h3>
+      <p>You retain full ownership of all communication content you introduce to the Platform. ACG claims no ownership interest in your data. ACG's rights to your data are limited solely to what is necessary to provide, maintain, and improve the Service.</p>
+      <h3>5.2 Data Processing</h3>
+      <p>ACG processes your data exclusively to render the Platform's features; maintain Platform stability and performance using anonymized, aggregated analytics; comply with legal obligations; and fulfill contractual obligations to you. ACG does not sell, trade, rent, or share your communication content with third parties for marketing, advertising, or any commercial purpose.</p>
+      <h3>5.3 AI Processing Disclosure</h3>
+      <p>Message content and metadata are transmitted to Anthropic PBC's Claude API for AI processing when you use AI features. This processing is governed by Anthropic's Enterprise Data Privacy Policy and Data Processing Agreement. Anthropic has committed that API-submitted data is not used to train models. You may configure the Platform to use your own Anthropic API key for full data sovereignty and to prevent any message content from transiting ACG's backend infrastructure.</p>
+      <h3>5.4 Security Measures</h3>
+      <p>ACG employs industry-standard security measures including: AES-256 encryption at rest for all credentials and sensitive data; TLS 1.2+ encryption in transit for all communications; row-level security (RLS) database policies ensuring users can only access their own data; HTTPS-only access enforcement; JWT-based authentication with automatic token rotation and refresh; and regular security assessments and vulnerability testing.</p>
+      <h3>5.5 Data Retention</h3>
+      <p>Communication data is retained for the duration of your active account and for 90 days following account termination, after which it is permanently and irreversibly deleted from all ACG systems. You may request immediate deletion of all your data at any time by contacting privacy@augmentationconsultinggroup.com. ACG will fulfill deletion requests within 30 days.</p>
+      <h3>5.6 HIPAA Compliance Notice</h3>
+      <p>The Platform is architected to support HIPAA-compatible workflows. However, processing Protected Health Information (PHI) requires a fully executed Business Associate Agreement (BAA) with ACG prior to any PHI processing. Contact compliance@augmentationconsultinggroup.com to initiate a BAA. Processing PHI without an executed BAA is strictly prohibited and constitutes a material breach of these Terms, entitling ACG to immediately terminate your account and pursue all available legal remedies.</p>
+      <h2>6. Intellectual Property Rights</h2>
+      <h3>6.1 ACG Ownership</h3>
+      <p>All content, features, functionality, software code, algorithms, design elements, user interface elements, trademarks, service marks, logos, and the names "Pulse Intelligence," "PulseIntel," and "Augmentation Consulting Group" are owned exclusively by Augmentation Consulting Group Inc. and are protected by United States and international copyright, trademark, patent, trade secret, and other intellectual property laws. Unauthorized reproduction, modification, distribution, public display, or commercial use is strictly prohibited.</p>
+      <h3>6.2 License Grant</h3>
+      <p>Subject to full compliance with these Terms, ACG grants you a limited, non-exclusive, non-transferable, non-sublicensable, revocable license to access and use the Platform solely for your authorized internal business purposes. This license expressly excludes: the right to sell, resell, or commercially exploit the Platform; the right to copy, modify, adapt, translate, or create derivative works; the right to use data mining, robots, scrapers, or similar tools against the Platform; and any use inconsistent with these Terms.</p>
+      <h3>6.3 Feedback License</h3>
+      <p>Any feedback, suggestions, enhancement requests, or ideas you provide regarding the Platform ("Feedback") are provided on a non-confidential, royalty-free basis. ACG may use, incorporate, modify, and commercialize any Feedback without restriction, attribution, or compensation to you.</p>
+      <h2>7. Third-Party Integrations and Services</h2>
+      <p>The Platform integrates with third-party services including Microsoft Corporation (Teams, Outlook, SharePoint), Google LLC (Gmail, Google Meet, Google Calendar, Google Drive), Slack Technologies LLC, and Zoom Video Communications Inc. Use of these integrations is subject to each platform's applicable terms of service, privacy policies, and acceptable use policies, which are incorporated herein by reference.</p>
+      <p>ACG is not responsible for: third-party API changes, deprecations, or outages that affect Platform functionality; data handling or security practices of third-party platforms; content transmitted through third-party platforms; or unauthorized access resulting from compromise of third-party platform credentials. All OAuth tokens and API credentials for third-party services are stored exclusively in AES-256 encrypted form. ACG personnel do not have access to plaintext credentials at any time.</p>
+      <h2>8. Service Availability and Maintenance</h2>
+      <p>ACG will use commercially reasonable efforts to maintain Platform availability and performance. Scheduled maintenance will be communicated with reasonable advance notice where practicable. ACG does not guarantee uninterrupted, error-free access and shall not be liable for downtime caused by scheduled or emergency maintenance; third-party infrastructure failures (cloud providers, CDN, DNS); force majeure events; or interruptions from your systems or internet connectivity.</p>
+      <h2>9. Billing and Payment</h2>
+      <p>Commercial and enterprise use of the Platform is subject to a separate Service Agreement specifying applicable subscription fees, billing cycles, overage charges, and service level agreements. Subscription fees are billed in advance. Non-payment may result in service suspension after written notice. All fees are exclusive of applicable taxes, which are the sole responsibility of the Client. ACG reserves the right to modify pricing with 30 days' written notice.</p>
+      <h2>10. Disclaimer of Warranties</h2>
+      <p>THE PLATFORM IS PROVIDED "AS IS" AND "AS AVAILABLE" WITHOUT WARRANTIES OF ANY KIND, EITHER EXPRESS OR IMPLIED. TO THE MAXIMUM EXTENT PERMITTED BY APPLICABLE LAW, AUGMENTATION CONSULTING GROUP INC. EXPRESSLY DISCLAIMS ALL WARRANTIES INCLUDING, BUT NOT LIMITED TO: IMPLIED WARRANTIES OF MERCHANTABILITY; FITNESS FOR A PARTICULAR PURPOSE; NON-INFRINGEMENT; ACCURACY, COMPLETENESS, OR TIMELINESS OF INFORMATION; UNINTERRUPTED OR ERROR-FREE OPERATION; FREEDOM FROM VIRUSES, MALWARE, OR HARMFUL COMPONENTS; AND ANY WARRANTY ARISING FROM COURSE OF DEALING, COURSE OF PERFORMANCE, OR TRADE USAGE.</p>
+      <p>AI-GENERATED CONTENT INCLUDING MESSAGE ANALYSES, DRAFT REPLIES, MEETING BRIEFINGS, AND DAILY REPORTS ARE ADVISORY IN NATURE AND GENERATED PROBABILISTICALLY. ACG MAKES NO WARRANTY AS TO THE ACCURACY, COMPLETENESS, TIMELINESS, SUITABILITY, OR FITNESS OF AI-GENERATED CONTENT FOR ANY SPECIFIC BUSINESS PURPOSE, LEGAL COMPLIANCE PURPOSE, OR MEDICAL PURPOSE. USERS ARE SOLELY RESPONSIBLE FOR REVIEWING, VERIFYING, EDITING, AND ACTING ON AI-GENERATED CONTENT. RELIANCE ON AI-GENERATED CONTENT FOR CRITICAL BUSINESS, LEGAL, FINANCIAL, OR MEDICAL DECISIONS IS AT THE USER'S SOLE RISK.</p>
+      <h2>11. Limitation of Liability</h2>
+      <p>TO THE FULLEST EXTENT PERMITTED BY APPLICABLE LAW, IN NO EVENT SHALL AUGMENTATION CONSULTING GROUP INC., ITS PARENT COMPANIES, SUBSIDIARIES, AFFILIATES, OFFICERS, DIRECTORS, PARTNERS, EMPLOYEES, AGENTS, CONTRACTORS, LICENSORS, SERVICE PROVIDERS, SUBCONTRACTORS, OR SUPPLIERS BE LIABLE FOR ANY:</p>
+      <ul>
+        <li>INDIRECT, INCIDENTAL, SPECIAL, CONSEQUENTIAL, EXEMPLARY, OR PUNITIVE DAMAGES OF ANY KIND;</li>
+        <li>LOSS OF PROFITS, REVENUE, SALES, GOODWILL, DATA, USE, BUSINESS OPPORTUNITIES, OR ANTICIPATED SAVINGS;</li>
+        <li>BUSINESS INTERRUPTION, LOSS OF CONTRACTS, OR LOSS OF ANTICIPATED BUSINESS;</li>
+        <li>DAMAGES RESULTING FROM UNAUTHORIZED ACCESS TO OR ALTERATION OF YOUR DATA OR TRANSMISSIONS;</li>
+        <li>DAMAGES RESULTING FROM RELIANCE ON AI-GENERATED CONTENT;</li>
+        <li>ANY OTHER DAMAGES ARISING OUT OF OR RELATED TO YOUR USE OF OR INABILITY TO USE THE PLATFORM;</li>
+      </ul>
+      <p>WHETHER BASED ON WARRANTY, CONTRACT, TORT (INCLUDING NEGLIGENCE OR STRICT LIABILITY), STATUTE, OR ANY OTHER LEGAL OR EQUITABLE THEORY, EVEN IF ACG HAS BEEN ADVISED OF THE POSSIBILITY OF SUCH DAMAGES AND EVEN IF A REMEDY SET FORTH HEREIN IS FOUND TO HAVE FAILED ITS ESSENTIAL PURPOSE.</p>
+      <p>AUGMENTATION CONSULTING GROUP INC.'S TOTAL CUMULATIVE LIABILITY FOR ALL CLAIMS ARISING UNDER OR RELATED TO THESE TERMS OR THE PLATFORM SHALL NOT EXCEED THE GREATER OF: (A) THE TOTAL AMOUNTS ACTUALLY PAID BY YOU TO ACG IN THE TWELVE (12) CALENDAR MONTHS IMMEDIATELY PRECEDING THE EVENT GIVING RISE TO THE CLAIM, OR (B) ONE HUNDRED UNITED STATES DOLLARS ($100.00).</p>
+      <h2>12. Indemnification</h2>
+      <p>You agree to defend, indemnify, and hold harmless Augmentation Consulting Group Inc. and its affiliates, officers, directors, employees, agents, licensors, and service providers from and against any and all claims, liabilities, damages, judgments, awards, losses, costs, expenses, and fees (including reasonable attorneys' fees and court costs) arising out of or relating to: (a) your violation of any provision of these Terms; (b) your use or misuse of the Platform; (c) content you transmit or process through the Platform; (d) your violation of any applicable law, regulation, or third-party right; (e) your infringement of any intellectual property, privacy, or publicity right; (f) your negligence, fraud, or willful misconduct; or (g) any claim by a third party arising from your use of the Platform.</p>
+      <h2>13. Governing Law, Jurisdiction, and Dispute Resolution</h2>
+      <h3>13.1 Governing Law</h3>
+      <p>These Terms shall be governed by and construed exclusively in accordance with the laws of the State of Connecticut, United States of America, without regard to its conflict of law principles or the United Nations Convention on Contracts for the International Sale of Goods.</p>
+      <h3>13.2 Mandatory Binding Arbitration</h3>
+      <p>EXCEPT FOR CLAIMS FOR INJUNCTIVE RELIEF OR DISPUTES RELATED TO INTELLECTUAL PROPERTY RIGHTS, ALL DISPUTES, CONTROVERSIES, OR CLAIMS ARISING OUT OF OR RELATING TO THESE TERMS, THE PLATFORM, OR ANY ACG PRODUCT OR SERVICE SHALL BE RESOLVED EXCLUSIVELY THROUGH FINAL AND BINDING ARBITRATION administered by the American Arbitration Association (AAA) under its then-current Commercial Arbitration Rules. The arbitration shall be conducted in Hartford County, Connecticut, before a single neutral arbitrator. The arbitrator's decision shall be final, binding, and confidential, and may be entered as a judgment in any court of competent jurisdiction.</p>
+      <h3>13.3 Class Action and Jury Trial Waiver</h3>
+      <p>YOU AND ACG EXPRESSLY WAIVE THE RIGHT TO A TRIAL BY JURY FOR ALL DISPUTES. YOU AND ACG AGREE THAT EACH MAY BRING CLAIMS AGAINST THE OTHER ONLY IN YOUR OR ITS INDIVIDUAL CAPACITY, AND NOT AS A PLAINTIFF, CLASS MEMBER, OR PARTICIPANT IN ANY PURPORTED CLASS, COLLECTIVE, REPRESENTATIVE, OR PRIVATE ATTORNEY GENERAL ACTION OR PROCEEDING.</p>
+      <h3>13.4 Injunctive Relief Exception</h3>
+      <p>Notwithstanding the arbitration clause, either party may seek preliminary injunctive or other equitable relief from a court of competent jurisdiction in Hartford County, Connecticut to prevent actual or threatened infringement, misappropriation, or violation of intellectual property rights, trade secrets, or confidentiality obligations.</p>
+      <h2>14. Export Controls and Regulatory Compliance</h2>
+      <p>The Platform and related technology may be subject to U.S. export control laws and regulations including the Export Administration Regulations (EAR) administered by the U.S. Department of Commerce. You agree not to export, re-export, or transfer the Platform, its underlying technology, or any documentation to any country, entity, or individual in violation of applicable U.S. export laws, including countries subject to U.S. economic sanctions or entities on any U.S. government restricted parties or denied persons list.</p>
+      <h2>15. Changes to Terms</h2>
+      <p>ACG reserves the right to modify these Terms at any time at its sole discretion. For material changes, ACG will provide at least thirty (30) days' advance notice via email to the registered address on file, or through a prominent notice on the Platform. "Material changes" means any changes that materially adversely affect your rights. Your continued use of the Platform after the effective date of any modification constitutes your irrevocable acceptance of the updated Terms. If you do not agree to modified Terms, you must immediately discontinue use and notify ACG to close your account.</p>
+      <h2>16. Miscellaneous Provisions</h2>
+      <h3>16.1 Entire Agreement</h3>
+      <p>These Terms, together with the Privacy Policy, any executed Service Agreement or Statement of Work, and any executed BAA, constitute the entire and exclusive agreement between you and ACG regarding the Platform and supersede all prior oral or written agreements, representations, warranties, and understandings.</p>
+      <h3>16.2 Severability</h3>
+      <p>If any provision of these Terms is held invalid, illegal, or unenforceable by a court of competent jurisdiction, such provision shall be modified to the minimum extent necessary to make it enforceable, and the remaining provisions shall continue in full force and effect.</p>
+      <h3>16.3 Waiver</h3>
+      <p>ACG's failure to enforce any right or provision of these Terms shall not constitute a waiver of such right or provision. Any waiver must be express and in writing signed by an authorized ACG representative.</p>
+      <h3>16.4 Assignment</h3>
+      <p>You may not assign, transfer, delegate, or sublicense any of your rights or obligations under these Terms without ACG's prior written consent. Any attempted assignment without consent is null and void. ACG may freely assign its rights and obligations under these Terms without restriction.</p>
+      <h3>16.5 Force Majeure</h3>
+      <p>Neither party shall be liable to the other for delays or failures in performance resulting from causes beyond its reasonable control, including natural disasters, acts of war or terrorism, labor disputes, utility failures, internet outages, government actions, or cyberattacks.</p>
+      <h3>16.6 Notices</h3>
+      <p>All legal notices to ACG must be sent in writing to legal@augmentationconsultinggroup.com. Notices to you will be sent to the email address registered to your account. Notices are effective upon confirmed delivery.</p>
+      <h2>17. Contact Information</h2>
+      <p><strong>Augmentation Consulting Group Inc.</strong><br>
+      Connecticut, United States of America<br>
+      Legal Inquiries: legal@augmentationconsultinggroup.com<br>
+      Privacy &amp; Data Requests: privacy@augmentationconsultinggroup.com<br>
+      HIPAA / BAA: compliance@augmentationconsultinggroup.com<br>
+      Security Incidents: security@augmentationconsultinggroup.com</p>
+      <p style="margin-top:24px;color:var(--text4);font-size:10px;font-family:var(--mono);">© 2025 Augmentation Consulting Group Inc. All rights reserved. Last revised: January 2025 · Document version 1.2 · This document constitutes a legally binding agreement.</p>
+    </div>
+    <div class="terms-full-footer">
+      <button class="submit-btn" style="width:auto;padding:11px 28px;" onclick="closeTermsFull()">Close &amp; return</button>
+    </div>
+  </div>
+</div>
+
+<script src="/api.js" onerror="console.log('api.js not loaded — demo mode')"></script>
+<script>
+// MARQUEE
+const mItems = ["AI Message Prioritization","Draft Reply Generation","Meeting Intelligence","Unified Platform Inbox","Real-Time Webhook Push","Daily Intelligence Reports","AES-256 Encryption","Microsoft Teams","Slack","Microsoft Outlook","Gmail","Zoom","Google Meet","Google Calendar","SharePoint","Veteran-Owned · Connecticut","HIPAA Compatible Architecture"];
+const mEl = document.getElementById("marquee");
+const mRow = [...mItems,...mItems].map(i=>`<div class="marquee-item"><span class="marquee-sep">◆</span> ${i}</div>`).join("");
+mEl.innerHTML = mRow + mRow;
+
+// AUTH
+let currentMode = "signup";
+let selectedInts = new Set();
+
+function openAuth(mode) {
+  currentMode = mode;
+  document.getElementById("auth-modal").classList.add("open");
+  document.body.style.overflow = "hidden";
+  if (mode === "login") {
+    switchAuthTab("login");
+    showStep("step-account");
+    setProgress(0.33);
+  } else {
+    switchAuthTab("signup");
+    showStep("step-account");
+    setProgress(0.33);
+  }
+}
+function closeAuth() {
+  document.getElementById("auth-modal").classList.remove("open");
+  document.body.style.overflow = "";
+}
+function switchAuthTab(tab) {
+  currentMode = tab;
+  document.getElementById("tab-signup").className = "auth-tab" + (tab==="signup"?" active":"");
+  document.getElementById("tab-login").className  = "auth-tab" + (tab==="login" ?" active":"");
+  document.getElementById("signup-form").style.display = tab==="signup"?"block":"none";
+  document.getElementById("login-form").style.display  = tab==="login" ?"block":"none";
+}
+function showStep(id) {
+  document.querySelectorAll(".auth-steps").forEach(s=>s.classList.remove("active"));
+  document.getElementById(id).classList.add("active");
+}
+function setProgress(p) {
+  document.getElementById("progress-bar").style.width = (p*100)+"%";
+}
+
+function checkPwStrength(pw) {
+  const bar = document.getElementById("pw-bar");
+  let s = 0;
+  if (pw.length>=8)  s++;
+  if (pw.length>=12) s++;
+  if (/[A-Z]/.test(pw)) s++;
+  if (/[0-9]/.test(pw)) s++;
+  if (/[^A-Za-z0-9]/.test(pw)) s++;
+  const c=["","#e85d2f","#f59e0b","#f59e0b","#22c55e","#22c55e"];
+  const w=["0%","20%","40%","65%","85%","100%"];
+  bar.style.width = w[s]||"0%"; bar.style.background = c[s]||"";
+}
+
+function showErr(alertId, msg) {
+  const el = document.getElementById(alertId);
+  el.textContent = msg; el.classList.add("show");
+}
+function hideErr(alertId) {
+  document.getElementById(alertId)?.classList.remove("show");
+}
+
+function goToStep2() {
+  const first = document.getElementById("s-first")?.value?.trim();
+  const email = document.getElementById("s-email")?.value?.trim();
+  const pass  = document.getElementById("s-pass")?.value;
+  if (!first)       { showErr("alert-signup","First name is required."); return; }
+  if (!email||!email.includes("@")) { showErr("alert-signup","A valid email address is required."); return; }
+  if (!pass||pass.length<8) { showErr("alert-signup","Password must be at least 8 characters."); return; }
+  hideErr("alert-signup");
+  showStep("step-integrations"); setProgress(0.66);
+}
+function goToStep1() { showStep("step-account"); setProgress(0.33); }
+function goToStep3() { showStep("step-terms"); setProgress(1.0); }
+function goToStep2fromTerms() { showStep("step-integrations"); setProgress(0.66); }
+
+function toggleInt(el) {
+  const key = el.dataset.int;
+  if (selectedInts.has(key)) { selectedInts.delete(key); el.classList.remove("selected"); }
+  else                        { selectedInts.add(key);    el.classList.add("selected"); }
+}
+
+function checkAllTerms() {
+  const all = ["chk-tos","chk-privacy","chk-ai","chk-age"];
+  const ok  = all.every(id => document.getElementById(id)?.checked);
+  const btn = document.getElementById("create-account-btn");
+  if (btn) btn.disabled = !ok;
+}
+
+async function doSignup() {
+  const first   = document.getElementById("s-first")?.value?.trim();
+  const last    = document.getElementById("s-last")?.value?.trim();
+  const title   = document.getElementById("s-title")?.value?.trim();
+  const company = document.getElementById("s-company")?.value?.trim();
+  const email   = document.getElementById("s-email")?.value?.trim();
+  const pass    = document.getElementById("s-pass")?.value;
+  const btn     = document.getElementById("create-account-btn");
+  hideErr("alert-terms");
+  btn.disabled = true; btn.textContent = "Creating account...";
+  localStorage.setItem("pulse_selected_integrations", JSON.stringify([...selectedInts]));
+  if (typeof window.API !== "undefined") {
+    try {
+      await API.auth.signup(email, pass, first, last);
+      await API.auth.login(email, pass);
+      await API.profile.update({ first_name:first, last_name:last, title, company }).catch(()=>{});
+      window.location.href = "/";
+    } catch(err) {
+      showErr("alert-terms", err.message || "Account creation failed. Please try again.");
+      btn.disabled = false; btn.textContent = "Create account →";
+    }
+  } else {
+    // Demo mode
+    localStorage.setItem("pulse_profile_firstname", first);
+    localStorage.setItem("pulse_profile_lastname",  last);
+    localStorage.setItem("pulse_profile_title",     title||"");
+    localStorage.setItem("pulse_profile_company",   company||"");
+    closeAuth();
+    setTimeout(() => { window.location.href = "/index.html"; }, 400);
+  }
+}
+
+async function doLogin() {
+  const email = document.getElementById("l-email")?.value?.trim();
+  const pass  = document.getElementById("l-pass")?.value;
+  const btn   = document.querySelector("#login-form .submit-btn");
+  hideErr("alert-login");
+  if (!email||!pass) { showErr("alert-login","Email and password are required."); return; }
+  if (btn) { btn.disabled=true; btn.textContent="Signing in..."; }
+  if (typeof window.API !== "undefined") {
+    try {
+      await API.auth.login(email, pass);
+      window.location.href = "/";
+    } catch(err) {
+      showErr("alert-login", err.message || "Incorrect email or password.");
+      if (btn) { btn.disabled=false; btn.textContent="Sign in to Pulse →"; }
+    }
+  } else {
+    closeAuth();
+    setTimeout(() => { window.location.href = "/index.html"; }, 400);
+  }
+}
+
+document.addEventListener("keydown", e => {
+  if (e.key==="Escape") { closeAuth(); closeTermsFull(); }
+});
+document.getElementById("auth-modal").addEventListener("click", function(e) {
+  if (e.target===this) closeAuth();
+});
+
+function openTermsFull(e) {
+  if (e) e.preventDefault();
+  document.getElementById("terms-full-modal").classList.add("open");
+  document.body.style.overflow="hidden";
+}
+function closeTermsFull() {
+  document.getElementById("terms-full-modal").classList.remove("open");
+  if (!document.getElementById("auth-modal").classList.contains("open")) {
+    document.body.style.overflow="";
+  }
+}
+
+// Scroll reveal
+const obs = new IntersectionObserver((entries) => {
+  entries.forEach(e => {
+    if (e.isIntersecting) {
+      e.target.style.opacity="1"; e.target.style.transform="translateY(0)";
+      obs.unobserve(e.target);
+    }
+  });
+}, { threshold:0.1 });
+document.querySelectorAll(".feat-card, .int-card").forEach(el => {
+  el.style.opacity="0"; el.style.transform="translateY(16px)";
+  el.style.transition="opacity 0.5s ease, transform 0.5s ease";
+  obs.observe(el);
+});
+
+// Signed-in banner
+if (typeof window.API !== "undefined" && window.API?.auth?.isLoggedIn) {
+  const b=document.createElement("div");
+  b.innerHTML=`<div style="position:fixed;bottom:24px;right:24px;z-index:50;background:var(--panel);border:1px solid var(--rule);border-radius:10px;padding:14px 20px;display:flex;align-items:center;gap:16px;box-shadow:0 8px 32px rgba(0,0,0,0.5);">
+    <span style="font-family:var(--mono);font-size:10px;color:var(--text2);">You're signed in.</span>
+    <a href="/index.html" style="font-family:var(--mono);font-size:10px;color:var(--accent);text-decoration:none;letter-spacing:0.06em;">Open Pulse →</a>
+    <button onclick="this.parentElement.parentElement.remove()" style="background:none;border:none;color:var(--text3);cursor:pointer;font-size:14px;">✕</button>
+  </div>`;
+  document.body.appendChild(b);
+}
+</script>
+</body>
+</html>

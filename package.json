@@ -1,0 +1,22 @@
+{
+  "name": "pulse-intelligence",
+  "version": "1.0.0",
+  "description": "Unified AI Communication Intelligence Platform",
+  "private": true,
+  "scripts": {
+    "dev": "vercel dev",
+    "build": "echo 'Static build — no compile step needed'",
+    "deploy": "vercel --prod"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.45.0",
+    "@anthropic-ai/sdk": "^0.30.0",
+    "jose": "^5.9.0"
+  },
+  "devDependencies": {
+    "vercel": "^37.0.0"
+  },
+  "engines": {
+    "node": ">=20.x"
+  }
+}
