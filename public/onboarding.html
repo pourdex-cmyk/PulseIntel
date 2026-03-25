@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Welcome to Pulse Intelligence</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=DM+Mono:wght@300;400;500&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --black:#08090b; --deep:#0d0f14; --panel:#111318; --surface:#181b23;
+  --lift:#1e2230; --rule:rgba(255,255,255,0.07); --rule2:rgba(255,255,255,0.04);
+  --text:#e8eaf0; --text2:#9297a8; --text3:#555b6e; --text4:#373d4d;
+  --accent:#c8a96e; --accentd:#a8863e; --accentl:#e8cb98;
+  --green:#22c55e; --green-soft:rgba(34,197,94,0.1); --green-border:rgba(34,197,94,0.2);
+  --blue:#3b82f6;
+  --serif:'Cormorant Garamond',Georgia,serif;
+  --mono:'DM Mono',monospace; --sans:'DM Sans',sans-serif;
+}
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
+html{scroll-behavior:smooth;}
+body{font-family:var(--sans);background:var(--black);color:var(--text);min-height:100vh;overflow-x:hidden;-webkit-font-smoothing:antialiased;}
+
+/* NAV */
+nav{height:56px;display:flex;align-items:center;justify-content:space-between;padding:0 48px;border-bottom:1px solid var(--rule);background:var(--black);}
+.nav-brand-name{font-family:var(--serif);font-size:20px;font-weight:500;letter-spacing:0.02em;}
+.nav-brand-name span{color:var(--accent);}
+.nav-step-indicator{font-family:var(--mono);font-size:9px;letter-spacing:0.12em;text-transform:uppercase;color:var(--text3);}
+
+/* LAYOUT */
+.page{max-width:920px;margin:0 auto;padding:64px 40px 120px;}
+
+/* WELCOME HEADER */
+.welcome-header{text-align:center;margin-bottom:60px;}
+.welcome-badge{display:inline-flex;align-items:center;gap:8px;font-family:var(--mono);font-size:9px;letter-spacing:0.16em;text-transform:uppercase;color:var(--green);background:var(--green-soft);border:1px solid var(--green-border);padding:5px 14px;border-radius:20px;margin-bottom:20px;}
+.welcome-badge::before{content:'●';font-size:7px;}
+.welcome-title{font-family:var(--serif);font-size:clamp(40px,5vw,68px);font-weight:300;line-height:1.05;letter-spacing:-0.02em;color:var(--text);margin-bottom:12px;}
+.welcome-title em{font-style:italic;color:var(--accent);}
+.welcome-sub{font-size:15px;color:var(--text2);max-width:480px;margin:0 auto;line-height:1.7;}
+
+/* PROGRESS STEPS */
+.steps-track{display:flex;align-items:flex-start;gap:0;margin-bottom:52px;position:relative;}
+.steps-track::before{content:'';position:absolute;top:20px;left:calc(16.6% + 20px);right:calc(16.6% + 20px);height:1px;background:var(--rule);z-index:0;}
+.step-item{flex:1;display:flex;flex-direction:column;align-items:center;gap:10px;position:relative;z-index:1;}
+.step-circle{width:40px;height:40px;border-radius:50%;border:1px solid var(--rule);background:var(--panel);display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:11px;color:var(--text3);transition:all 0.3s;flex-shrink:0;}
+.step-circle.done{background:var(--green-soft);border-color:var(--green-border);color:var(--green);}
+.step-circle.active{background:rgba(200,169,110,0.12);border-color:rgba(200,169,110,0.4);color:var(--accent);}
+.step-label{font-family:var(--mono);font-size:8px;letter-spacing:0.1em;text-transform:uppercase;color:var(--text3);text-align:center;line-height:1.4;}
+.step-label.done{color:var(--green);}
+.step-label.active{color:var(--accent);}
+
+/* PANELS */
+.panel{background:var(--panel);border:1px solid var(--rule);border-radius:16px;overflow:hidden;margin-bottom:16px;}
+.panel-header{padding:24px 28px;display:flex;align-items:center;gap:16px;border-bottom:1px solid var(--rule);background:var(--deep);}
+.panel-icon{width:40px;height:40px;border-radius:10px;border:1px solid var(--rule);background:var(--surface);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;}
+.panel-title{font-family:var(--serif);font-size:20px;font-weight:400;color:var(--text);}
+.panel-sub{font-size:12px;color:var(--text3);margin-top:2px;}
+.panel-status{margin-left:auto;font-family:var(--mono);font-size:9px;letter-spacing:0.1em;text-transform:uppercase;padding:4px 10px;border-radius:10px;}
+.panel-status.done{background:var(--green-soft);color:var(--green);border:1px solid var(--green-border);}
+.panel-status.pending{background:rgba(200,169,110,0.08);color:var(--accent);border:1px solid rgba(200,169,110,0.2);}
+.panel-status.waiting{background:var(--surface);color:var(--text3);border:1px solid var(--rule);}
+.panel-body{padding:24px 28px;}
+
+/* INTEGRATION CHIPS */
+.int-chips{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px;}
+.int-chip{display:flex;align-items:center;gap:7px;padding:8px 14px;border-radius:10px;border:1px solid var(--rule);background:var(--surface);font-family:var(--mono);font-size:10px;color:var(--text2);}
+.int-chip.selected{border-color:rgba(200,169,110,0.4);background:rgba(200,169,110,0.07);color:var(--accent);}
+.int-chip .ic-emoji{font-size:14px;}
+.int-chip-hint{font-size:12px;color:var(--text3);line-height:1.6;}
+
+/* SETUP STEPS */
+.setup-list{display:flex;flex-direction:column;gap:12px;}
+.setup-item{display:flex;align-items:flex-start;gap:14px;padding:16px 18px;border-radius:10px;border:1px solid var(--rule);background:var(--surface);transition:border-color 0.2s;}
+.setup-item:hover{border-color:rgba(200,169,110,0.25);}
+.setup-num{width:28px;height:28px;border-radius:50%;background:rgba(200,169,110,0.1);border:1px solid rgba(200,169,110,0.2);display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:10px;color:var(--accent);flex-shrink:0;margin-top:1px;}
+.setup-content{flex:1;}
+.setup-title{font-size:13px;font-weight:500;color:var(--text);margin-bottom:3px;}
+.setup-desc{font-size:12px;color:var(--text3);line-height:1.5;}
+.setup-tag{font-family:var(--mono);font-size:8px;padding:2px 8px;border-radius:6px;background:var(--lift);color:var(--text3);margin-top:6px;display:inline-block;}
+
+/* INFO GRID */
+.info-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.info-card{padding:16px 18px;border-radius:10px;border:1px solid var(--rule);background:var(--surface);}
+.info-card-icon{font-size:18px;margin-bottom:8px;}
+.info-card-title{font-size:13px;font-weight:500;color:var(--text);margin-bottom:4px;}
+.info-card-desc{font-size:11px;color:var(--text3);line-height:1.5;}
+
+/* CTA */
+.cta-section{text-align:center;margin-top:48px;padding:48px;background:var(--panel);border:1px solid var(--rule);border-radius:16px;position:relative;overflow:hidden;}
+.cta-section::before{content:'';position:absolute;top:-80px;left:50%;transform:translateX(-50%);width:400px;height:400px;border-radius:50%;background:radial-gradient(circle,rgba(200,169,110,0.05) 0%,transparent 70%);pointer-events:none;}
+.cta-title{font-family:var(--serif);font-size:36px;font-weight:300;color:var(--text);letter-spacing:-0.02em;margin-bottom:10px;}
+.cta-title em{font-style:italic;color:var(--accent);}
+.cta-sub{font-size:13px;color:var(--text2);margin-bottom:28px;line-height:1.6;}
+.cta-btn{display:inline-flex;align-items:center;gap:10px;padding:16px 40px;border-radius:10px;background:var(--accent);color:var(--black);font-family:var(--mono);font-size:12px;font-weight:500;letter-spacing:0.1em;text-transform:uppercase;border:none;cursor:pointer;transition:all 0.2s;font-size:11px;}
+.cta-btn:hover{background:var(--accentl);transform:translateY(-1px);}
+.cta-hint{font-family:var(--mono);font-size:9px;color:var(--text4);letter-spacing:0.08em;margin-top:14px;text-transform:uppercase;}
+
+/* ANIMATIONS */
+.fade-in{opacity:0;transform:translateY(16px);animation:fadein 0.5s ease forwards;}
+@keyframes fadein{to{opacity:1;transform:translateY(0);}}
+.d1{animation-delay:0.05s;}.d2{animation-delay:0.15s;}.d3{animation-delay:0.25s;}.d4{animation-delay:0.35s;}.d5{animation-delay:0.45s;}.d6{animation-delay:0.55s;}
+
+@media(max-width:700px){
+  nav{padding:0 20px;}
+  .page{padding:40px 20px 80px;}
+  .info-grid{grid-template-columns:1fr;}
+  .steps-track{gap:4px;}
+  .steps-track::before{display:none;}
+}
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-brand-name">Pulse<span>Intel</span></div>
+  <div class="nav-step-indicator">Account Setup</div>
+</nav>
+
+<div class="page">
+
+  <!-- WELCOME HEADER -->
+  <div class="welcome-header fade-in">
+    <div class="welcome-badge">Account activated</div>
+    <h1 class="welcome-title" id="welcome-title">Welcome to<br><em>Pulse Intelligence.</em></h1>
+    <p class="welcome-sub">Your workspace is ready. A few quick steps and your AI command center will be fully operational.</p>
+  </div>
+
+  <!-- PROGRESS TRACK -->
+  <div class="steps-track fade-in d1">
+    <div class="step-item">
+      <div class="step-circle done">✓</div>
+      <div class="step-label done">Account<br>created</div>
+    </div>
+    <div class="step-item">
+      <div class="step-circle done">✓</div>
+      <div class="step-label done">Terms<br>accepted</div>
+    </div>
+    <div class="step-item">
+      <div class="step-circle active">3</div>
+      <div class="step-label active">Connect<br>platforms</div>
+    </div>
+    <div class="step-item">
+      <div class="step-circle">4</div>
+      <div class="step-label">Configure<br>AI profile</div>
+    </div>
+    <div class="step-item">
+      <div class="step-circle">5</div>
+      <div class="step-label">First<br>briefing</div>
+    </div>
+    <div class="step-item">
+      <div class="step-circle">✦</div>
+      <div class="step-label">Live</div>
+    </div>
+  </div>
+
+  <!-- PANEL 1: Account Confirmed -->
+  <div class="panel fade-in d2">
+    <div class="panel-header">
+      <div class="panel-icon">✓</div>
+      <div>
+        <div class="panel-title">Your account is live</div>
+        <div class="panel-sub">Workspace provisioned · Security configured · Ready for connections</div>
+      </div>
+      <div class="panel-status done">Complete</div>
+    </div>
+    <div class="panel-body">
+      <div class="info-grid">
+        <div class="info-card">
+          <div class="info-card-icon">🔒</div>
+          <div class="info-card-title">AES-256 encrypted storage</div>
+          <div class="info-card-desc">All credentials and tokens you connect are encrypted before storage. Never exposed in plaintext.</div>
+        </div>
+        <div class="info-card">
+          <div class="info-card-icon">🛡</div>
+          <div class="info-card-title">Row-level security active</div>
+          <div class="info-card-desc">Your data is isolated at the database level. No other user can access your messages or settings.</div>
+        </div>
+        <div class="info-card">
+          <div class="info-card-icon">✦</div>
+          <div class="info-card-title">Claude AI ready</div>
+          <div class="info-card-desc">Platform AI key configured. Add your own Anthropic API key in Settings for full data sovereignty.</div>
+        </div>
+        <div class="info-card">
+          <div class="info-card-icon">⚡</div>
+          <div class="info-card-title">Real-time webhooks</div>
+          <div class="info-card-desc">Your unique webhook endpoints are generated. Messages will arrive instantly once platforms are connected.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PANEL 2: Integrations -->
+  <div class="panel fade-in d3">
+    <div class="panel-header">
+      <div class="panel-icon">🔗</div>
+      <div>
+        <div class="panel-title">Connect your platforms</div>
+        <div class="panel-sub">Activate the integrations you selected — done in Settings after signing in</div>
+      </div>
+      <div class="panel-status pending">Next step</div>
+    </div>
+    <div class="panel-body">
+      <p style="font-size:13px;color:var(--text2);margin-bottom:16px;line-height:1.6;">You selected these integrations during signup. Connect each one in <strong style="color:var(--text);">Settings → Integrations</strong> after opening your dashboard. Each integration takes 2–5 minutes to configure via OAuth or webhook token.</p>
+      <div class="int-chips" id="int-chips-display">
+        <!-- populated by JS -->
+      </div>
+      <p class="int-chip-hint" id="int-chip-hint"></p>
+    </div>
+  </div>
+
+  <!-- PANEL 3: Setup Guide -->
+  <div class="panel fade-in d4">
+    <div class="panel-header">
+      <div class="panel-icon">📋</div>
+      <div>
+        <div class="panel-title">Getting started guide</div>
+        <div class="panel-sub">Four steps to a fully operational intelligence workspace</div>
+      </div>
+      <div class="panel-status waiting">In progress</div>
+    </div>
+    <div class="panel-body">
+      <div class="setup-list">
+        <div class="setup-item">
+          <div class="setup-num">1</div>
+          <div class="setup-content">
+            <div class="setup-title">Connect your first integration</div>
+            <div class="setup-desc">Navigate to Settings → Integrations. Start with your most-used email platform (Outlook or Gmail). The setup wizard walks you through OAuth authorization — no developer knowledge required.</div>
+            <div class="setup-tag">Settings → Integrations → Connect</div>
+          </div>
+        </div>
+        <div class="setup-item">
+          <div class="setup-num">2</div>
+          <div class="setup-content">
+            <div class="setup-title">Set your AI communication profile</div>
+            <div class="setup-desc">Tell Pulse how you communicate. Set your tone (professional, direct, formal, friendly), draft length preference, and add a signoff. This trains AI drafts to sound exactly like you — not like a bot.</div>
+            <div class="setup-tag">Settings → Profile → Communication Style</div>
+          </div>
+        </div>
+        <div class="setup-item">
+          <div class="setup-num">3</div>
+          <div class="setup-content">
+            <div class="setup-title">Generate your first daily briefing</div>
+            <div class="setup-desc">Once messages are flowing in, open the AI menu and request your Daily Intelligence Report. You'll get a plain-English executive summary of everything that matters — across every connected platform.</div>
+            <div class="setup-tag">Inbox → AI Menu → Daily Report</div>
+          </div>
+        </div>
+        <div class="setup-item">
+          <div class="setup-num">4</div>
+          <div class="setup-content">
+            <div class="setup-title">Optionally add your own Claude API key</div>
+            <div class="setup-desc">For maximum data sovereignty — where your message content never leaves your infrastructure — add your own Anthropic API key. Visit console.anthropic.com to generate one.</div>
+            <div class="setup-tag">Settings → AI Configuration → API Key</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PANEL 4: What's waiting -->
+  <div class="panel fade-in d5">
+    <div class="panel-header">
+      <div class="panel-icon">📊</div>
+      <div>
+        <div class="panel-title">What's waiting for you inside</div>
+        <div class="panel-sub">A preview of your full intelligence workspace</div>
+      </div>
+    </div>
+    <div class="panel-body">
+      <div class="info-grid">
+        <div class="info-card">
+          <div class="info-card-icon">✉</div>
+          <div class="info-card-title">Unified Inbox</div>
+          <div class="info-card-desc">All email, chat, and meeting messages in one view. AI-scored and categorized — Action, Meeting, FYI, or Noise. Filter, sort, and focus instantly.</div>
+        </div>
+        <div class="info-card">
+          <div class="info-card-icon">✍</div>
+          <div class="info-card-title">AI Draft Replies</div>
+          <div class="info-card-desc">One click generates a reply in your voice for any message. Platform-aware — email reads like email, Slack reads like Slack.</div>
+        </div>
+        <div class="info-card">
+          <div class="info-card-icon">📅</div>
+          <div class="info-card-title">Meeting Tracker</div>
+          <div class="info-card-desc">Add meetings with full agendas, attendees, prep checklists, and linked messages. Generate AI briefings before any call.</div>
+        </div>
+        <div class="info-card">
+          <div class="info-card-icon">📊</div>
+          <div class="info-card-title">Daily Intelligence Reports</div>
+          <div class="info-card-desc">Cross-platform executive summaries generated on demand. See the day's communication load before you open a single app.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CTA -->
+  <div class="cta-section fade-in d6">
+    <div class="cta-title">Your workspace is <em>ready.</em></div>
+    <p class="cta-sub">Connect your first platform and start receiving AI-prioritized intelligence within minutes.</p>
+    <button class="cta-btn" onclick="goToApp()">Open Pulse Intelligence →</button>
+    <div class="cta-hint">You'll land in Settings to connect your first integration</div>
+  </div>
+
+</div>
+
+<script>
+// ── Redirect if not logged in ─────────────────────────────────────
+if (!localStorage.getItem('pulse_token')) {
+  window.location.href = '/';
+}
+
+// ── Personalize welcome ───────────────────────────────────────────
+const name    = localStorage.getItem('pulse_onboarding_name') || '';
+const title   = localStorage.getItem('pulse_onboarding_title') || '';
+const company = localStorage.getItem('pulse_onboarding_company') || '';
+
+if (name) {
+  document.getElementById('welcome-title').innerHTML =
+    `Welcome, <em>${name}.</em>`;
+}
+
+// ── Render selected integrations ──────────────────────────────────
+const INT_META = {
+  teams:      { emoji:'💬', label:'Microsoft Teams' },
+  slack:      { emoji:'#',  label:'Slack' },
+  outlook:    { emoji:'✉',  label:'Outlook' },
+  gmail:      { emoji:'📧', label:'Gmail' },
+  zoom:       { emoji:'🎥', label:'Zoom' },
+  gmeet:      { emoji:'🟢', label:'Google Meet' },
+  sharepoint: { emoji:'📁', label:'SharePoint' },
+  gdrive:     { emoji:'🗂', label:'Google Drive' },
+  calendar:   { emoji:'📆', label:'Google Calendar' },
+};
+
+let selected = [];
+try { selected = JSON.parse(localStorage.getItem('pulse_onboarding_integrations') || '[]'); } catch {}
+
+const chipsEl = document.getElementById('int-chips-display');
+const hintEl  = document.getElementById('int-chip-hint');
+
+if (selected.length > 0) {
+  selected.forEach(key => {
+    const m = INT_META[key];
+    if (!m) return;
+    const chip = document.createElement('div');
+    chip.className = 'int-chip selected';
+    chip.innerHTML = `<span class="ic-emoji">${m.emoji}</span>${m.label}`;
+    chipsEl.appendChild(chip);
+  });
+  hintEl.textContent = `${selected.length} integration${selected.length>1?'s':''} queued. Connect each one in Settings → Integrations after opening your dashboard.`;
+} else {
+  const chip = document.createElement('div');
+  chip.className = 'int-chip';
+  chip.innerHTML = `<span class="ic-emoji">⚙️</span>No integrations selected yet — you can add them anytime in Settings.`;
+  chipsEl.appendChild(chip);
+  hintEl.textContent = 'Navigate to Settings → Integrations to connect platforms at any time.';
+}
+
+// ── Go to app ─────────────────────────────────────────────────────
+function goToApp() {
+  // Mark onboarding complete
+  localStorage.setItem('pulse_onboarded', '1');
+  window.location.href = '/app';
+}
+</script>
+</body>
+</html>
