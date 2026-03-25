@@ -113,6 +113,33 @@ nav{position:fixed;top:0;left:0;right:0;z-index:100;height:60px;display:flex;ali
 .int-status{font-family:var(--mono);font-size:8px;padding:2px 8px;border-radius:8px;background:rgba(34,197,94,0.1);color:var(--green);border:1px solid rgba(34,197,94,0.2);}
 .int-status.soon{background:rgba(200,169,110,0.08);color:var(--accent);border-color:rgba(200,169,110,0.2);}
 
+/* PRICING */
+.pricing-section{background:var(--black);}
+.pricing-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:56px;}
+.price-card{background:var(--panel);border:1px solid var(--rule);border-radius:16px;padding:32px 28px;display:flex;flex-direction:column;position:relative;transition:border-color 0.2s;}
+.price-card:hover{border-color:rgba(200,169,110,0.25);}
+.price-card.featured{border-color:rgba(200,169,110,0.4);background:var(--surface);}
+.price-featured-badge{position:absolute;top:-12px;left:50%;transform:translateX(-50%);font-family:var(--mono);font-size:8px;letter-spacing:0.14em;text-transform:uppercase;color:var(--black);background:var(--accent);padding:3px 12px;border-radius:10px;white-space:nowrap;}
+.price-tier{font-family:var(--mono);font-size:9px;letter-spacing:0.16em;text-transform:uppercase;color:var(--text3);margin-bottom:12px;}
+.price-amount{font-family:var(--serif);font-size:48px;font-weight:300;color:var(--text);line-height:1;margin-bottom:2px;}
+.price-amount span{font-size:22px;vertical-align:top;margin-top:8px;display:inline-block;color:var(--accent);}
+.price-cadence{font-family:var(--mono);font-size:9px;letter-spacing:0.1em;color:var(--text3);margin-bottom:6px;}
+.price-who{font-size:12px;color:var(--text2);line-height:1.5;margin-bottom:24px;padding-bottom:24px;border-bottom:1px solid var(--rule);}
+.price-features{list-style:none;display:flex;flex-direction:column;gap:10px;flex:1;margin-bottom:28px;}
+.price-feature{display:flex;align-items:flex-start;gap:9px;font-size:12px;color:var(--text2);line-height:1.4;}
+.price-feature::before{content:'✓';font-family:var(--mono);font-size:9px;color:var(--accent);flex-shrink:0;margin-top:2px;}
+.price-feature.dim{color:var(--text3);}
+.price-feature.dim::before{color:var(--text4);}
+.price-cta{width:100%;padding:12px;border-radius:8px;font-family:var(--mono);font-size:10px;font-weight:500;letter-spacing:0.1em;text-transform:uppercase;border:none;cursor:pointer;transition:all 0.15s;}
+.price-cta.primary{background:var(--accent);color:var(--black);}
+.price-cta.primary:hover{background:var(--accentl);}
+.price-cta.ghost{background:transparent;color:var(--text2);border:1px solid var(--rule);}
+.price-cta.ghost:hover{border-color:var(--accent);color:var(--accent);}
+.price-custom{font-family:var(--serif);font-size:40px;font-weight:300;color:var(--accent);line-height:1;margin-bottom:2px;}
+.pricing-note{text-align:center;margin-top:28px;font-family:var(--mono);font-size:9px;letter-spacing:0.1em;color:var(--text4);text-transform:uppercase;}
+@media(max-width:1100px){.pricing-grid{grid-template-columns:repeat(2,1fr);}}
+@media(max-width:700px){.pricing-grid{grid-template-columns:1fr;}}
+
 /* CTA BAND & FOOTER */
 .cta-band{background:var(--panel);border-top:1px solid var(--rule);border-bottom:1px solid var(--rule);padding:80px;display:flex;align-items:center;justify-content:space-between;gap:40px;}
 .big-title{font-family:var(--serif);font-size:clamp(30px,4vw,50px);font-weight:300;line-height:1.1;letter-spacing:-0.02em;}
@@ -248,6 +275,7 @@ footer{padding:32px 80px;display:flex;align-items:center;justify-content:space-b
   <div class="nav-links">
     <a href="#features" class="nav-link">Features</a>
     <a href="#integrations" class="nav-link">Integrations</a>
+    <a href="#pricing" class="nav-link">Pricing</a>
     <a href="#" class="nav-link" onclick="openTermsFull(event)">Terms</a>
   </div>
   <button class="nav-cta" id="nav-cta-btn" onclick="openAuth('login')">Sign in</button>
@@ -336,6 +364,94 @@ footer{padding:32px 80px;display:flex;align-items:center;justify-content:space-b
     <div class="int-card"><div class="int-logo">📁</div><div class="int-name">SharePoint</div><div class="int-status soon">Coming Soon</div></div>
     <div class="int-card"><div class="int-logo">🗂</div><div class="int-name">Google Drive</div><div class="int-status soon">Coming Soon</div></div>
   </div>
+</section>
+
+<!-- PRICING -->
+<section class="section pricing-section" id="pricing">
+  <div class="section-label">Pricing</div>
+  <h2 class="section-title">Simple, <em>transparent</em> pricing</h2>
+  <p class="section-sub">One plan for every stage. No hidden fees, no per-integration charges, no surprises.</p>
+  <div class="pricing-grid">
+
+    <!-- SOLO -->
+    <div class="price-card">
+      <div class="price-tier">Solo</div>
+      <div class="price-amount"><span>$</span>19</div>
+      <div class="price-cadence">per month</div>
+      <div class="price-who">Individual professional, freelancer, or solopreneur managing their own communications.</div>
+      <ul class="price-features">
+        <li class="price-feature">Unified inbox — email &amp; chat</li>
+        <li class="price-feature">AI priority scoring</li>
+        <li class="price-feature">AI-generated draft replies</li>
+        <li class="price-feature">Daily intelligence reports</li>
+        <li class="price-feature">Up to 2 integrations</li>
+        <li class="price-feature">500 AI actions / month</li>
+        <li class="price-feature dim">Meeting intelligence</li>
+        <li class="price-feature dim">Bring your own Claude key</li>
+      </ul>
+      <button class="price-cta ghost" onclick="openAuth('signup')">Get started →</button>
+    </div>
+
+    <!-- PROFESSIONAL -->
+    <div class="price-card featured">
+      <div class="price-featured-badge">Most popular</div>
+      <div class="price-tier">Professional</div>
+      <div class="price-amount"><span>$</span>49</div>
+      <div class="price-cadence">per month</div>
+      <div class="price-who">Individual power user or self-serve team up to 5 people needing full AI capabilities.</div>
+      <ul class="price-features">
+        <li class="price-feature">Everything in Solo</li>
+        <li class="price-feature">All integrations (unlimited)</li>
+        <li class="price-feature">Meeting intelligence &amp; briefings</li>
+        <li class="price-feature">Unlimited AI actions</li>
+        <li class="price-feature">Bring your own Claude API key</li>
+        <li class="price-feature">Thread &amp; deep analysis</li>
+        <li class="price-feature">Priority support</li>
+        <li class="price-feature dim">Team management console</li>
+      </ul>
+      <button class="price-cta primary" onclick="openAuth('signup')">Start free trial →</button>
+    </div>
+
+    <!-- TEAM -->
+    <div class="price-card">
+      <div class="price-tier">Team</div>
+      <div class="price-amount"><span>$</span>79</div>
+      <div class="price-cadence">per user / month · invoiced</div>
+      <div class="price-who">Company procurement for 10 or more users. Invoiced billing, team admin controls included.</div>
+      <ul class="price-features">
+        <li class="price-feature">Everything in Professional</li>
+        <li class="price-feature">10+ user minimum</li>
+        <li class="price-feature">Team admin console</li>
+        <li class="price-feature">Centralized billing &amp; invoicing</li>
+        <li class="price-feature">SSO / SAML (add-on)</li>
+        <li class="price-feature">Audit logging</li>
+        <li class="price-feature">Dedicated Slack support channel</li>
+        <li class="price-feature dim">Custom BAA / SLA</li>
+      </ul>
+      <button class="price-cta ghost" onclick="openAuth('signup')">Contact sales →</button>
+    </div>
+
+    <!-- ENTERPRISE -->
+    <div class="price-card">
+      <div class="price-tier">Enterprise</div>
+      <div class="price-custom">Custom</div>
+      <div class="price-cadence">annual contract · negotiated</div>
+      <div class="price-who">50+ users requiring BAA, SLA guarantees, dedicated onboarding, and enterprise procurement.</div>
+      <ul class="price-features">
+        <li class="price-feature">Everything in Team</li>
+        <li class="price-feature">50+ user deployment</li>
+        <li class="price-feature">Executed BAA (HIPAA)</li>
+        <li class="price-feature">Custom SLA with uptime guarantee</li>
+        <li class="price-feature">Dedicated onboarding engineer</li>
+        <li class="price-feature">Custom integrations on request</li>
+        <li class="price-feature">Quarterly business reviews</li>
+        <li class="price-feature">24/7 priority support</li>
+      </ul>
+      <button class="price-cta ghost" onclick="window.location='mailto:sales@augmentationconsultinggroup.com'">Talk to us →</button>
+    </div>
+
+  </div>
+  <div class="pricing-note">All plans include AES-256 encryption · Row-level security · No data sold to third parties · Cancel anytime</div>
 </section>
 
 <!-- CTA BAND -->
