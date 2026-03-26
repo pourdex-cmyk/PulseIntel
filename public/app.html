@@ -2222,7 +2222,7 @@ async function init() {
 
   if (hasAPI) {
     // Redirect to login if not authenticated
-    if (!API.auth.isLoggedIn) { window.location.href="/login.html"; return; }
+    if (!API.auth.isLoggedIn) { window.location.href="/"; return; }
     setApiStatus("calling");
     try {
       const [profile, connectors] = await Promise.all([ API.profile.get(), API.connectors.get() ]);
@@ -2238,17 +2238,15 @@ async function init() {
       try {
         const [emailData,chatData]=await Promise.all([API.messages.list({tab:"email",limit:100}),API.messages.list({tab:"chat",limit:100})]);
         const apiMsgs=[...(emailData?.messages||[]),...(chatData?.messages||[])];
-        if (apiMsgs.length>0) {
-          MESSAGES.length=0;
-          apiMsgs.forEach(m=>MESSAGES.push({
-            id:m.id, source:m.source, type:m.type, sender:m.sender, handle:m.handle,
-            time:new Date(m.received_at).toLocaleTimeString("en-US",{hour:"numeric",minute:"2-digit"}),
-            subject:m.subject, preview:m.preview, body:m.body,
-            tags:m.tags||[], priority:m.priority||50, category:m.category||"fyi",
-            unread:m.unread!==false, channel:m.channel||null,
-          }));
-        }
-      } catch(e) { console.warn("Message load failed, using demo data:", e.message); }
+        MESSAGES.length=0;
+        apiMsgs.forEach(m=>MESSAGES.push({
+          id:m.id, source:m.source, type:m.type, sender:m.sender, handle:m.handle,
+          time:new Date(m.received_at).toLocaleTimeString("en-US",{hour:"numeric",minute:"2-digit"}),
+          subject:m.subject, preview:m.preview, body:m.body,
+          tags:m.tags||[], priority:m.priority||50, category:m.category||"fyi",
+          unread:m.unread!==false, channel:m.channel||null,
+        }));
+      } catch(e) { console.warn("Message load failed:", e.message); }
       // Realtime subscription
       if (window.API?.subscribeToMessages) {
         API.subscribeToMessages(newMsg=>{
@@ -2265,7 +2263,7 @@ async function init() {
     _localFallbackInit();
   }
 
-  seedMeetings();
+  if (!API.auth.isLoggedIn) seedMeetings();
   updateTabCounts();
   switchTab("email");
 }
