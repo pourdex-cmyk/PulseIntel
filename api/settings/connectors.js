@@ -55,7 +55,7 @@ export default withAuth(async (req, { user }) => {
       outlook: `${baseUrl}/api/webhooks/outlook?uid=${userId}`,
       gmail:   `${baseUrl}/api/webhooks/gmail?uid=${userId}`,
     };
-    return json({ connected, webhooks, claude_configured: !!data.claude_key_encrypted });
+    return json({ connected, webhooks, claude_configured: !!(data.claude_key_encrypted || process.env.ANTHROPIC_API_KEY) });
   }
 
   if (req.method === 'PUT') {

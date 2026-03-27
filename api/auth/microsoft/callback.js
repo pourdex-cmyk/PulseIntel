@@ -1,7 +1,7 @@
 import { supabaseAdmin } from '../../../lib/supabase.js';
 import { graphGet, scorePriority, categorize } from '../../../lib/msGraph.js';
 
-export const config = { runtime: 'edge' };
+export const config = { runtime: 'nodejs', maxDuration: 60 };
 
 async function encrypt(text, secret) {
   const key = await crypto.subtle.importKey('raw', new TextEncoder().encode(secret.slice(0, 32).padEnd(32, '0')), { name: 'AES-GCM' }, false, ['encrypt']);
@@ -20,15 +20,62 @@ async function decryptState(state, secret) {
 
 // ── Initial data sync helpers ─────────────────────────────────────────────────
 
+async function syncOutlookEmails(userId, accessToken) {
+  try {
+    const since = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
+    const emailsRes = await graphGet(
+      `/me/mailFolders/Inbox/messages?$top=25&$orderby=receivedDateTime desc` +
+      `&$select=subject,from,body,bodyPreview,importance,receivedDateTime,isRead` +
+      `&$filter=receivedDateTime ge ${since}`,
+      accessToken
+    );
+
+    const rows = [];
+    for (const email of (emailsRes.value || [])) {
+      const fromName  = email.from?.emailAddress?.name    || email.from?.emailAddress?.address || 'Unknown';
+      const fromEmail = email.from?.emailAddress?.address || '';
+      const bodyHtml  = email.body?.content || `<p>${email.bodyPreview || ''}</p>`;
+      const bodyText  = bodyHtml.replace(/<[^>]+>/g, '').trim();
+      const subject   = email.subject || '(No subject)';
+      const baseText  = `${subject} ${bodyText}${email.importance === 'high' ? ' urgent' : ''}`;
+
+      rows.push({
+        user_id:     userId,
+        source:      'outlook',
+        type:        'email',
+        sender:      fromName,
+        handle:      fromEmail,
+        subject,
+        preview:     bodyText.substring(0, 120),
+        body:        bodyHtml,
+        tags:        [categorize(`${subject} ${bodyText}`)],
+        category:    categorize(`${subject} ${bodyText}`),
+        priority:    scorePriority(baseText),
+        channel:     null,
+        unread:      !email.isRead,
+        received_at: email.receivedDateTime || new Date().toISOString(),
+      });
+    }
+    if (rows.length) {
+      // Clear old synced outlook messages then batch insert
+      await supabaseAdmin.from('messages').delete().eq('user_id', userId).eq('source', 'outlook');
+      await supabaseAdmin.from('messages').insert(rows);
+    }
+  } catch (e) {
+    console.warn('Outlook email sync:', e.message);
+  }
+}
+
 async function syncTeamsMessages(userId, accessToken) {
   try {
     // Get most-recently-active chats
     const chatsRes = await graphGet('/me/chats?$top=10&$orderby=lastUpdatedDateTime desc', accessToken);
     const chats = chatsRes.value || [];
 
-    for (const chat of chats.slice(0, 6)) {
+    const rows = [];
+    for (const chat of chats.slice(0, 5)) {
       const msgsRes = await graphGet(
-        `/me/chats/${chat.id}/messages?$top=8&$orderby=createdDateTime desc`,
+        `/me/chats/${chat.id}/messages?$top=6&$orderby=createdDateTime desc`,
         accessToken
       ).catch(() => ({ value: [] }));
 
@@ -37,11 +84,8 @@ async function syncTeamsMessages(userId, accessToken) {
         const content = msg.body.content.replace(/<[^>]+>/g, '').trim();
         if (!content) continue;
 
-        const from     = msg.from?.user || {};
-        const priority = scorePriority(content);
-        const category = categorize(content);
-
-        await supabaseAdmin.from('messages').insert({
+        const from = msg.from?.user || {};
+        rows.push({
           user_id:     userId,
           source:      'teams',
           type:        chat.chatType === 'oneOnOne' ? 'message' : 'channel',
@@ -50,14 +94,18 @@ async function syncTeamsMessages(userId, accessToken) {
           subject:     content.substring(0, 80) || 'Teams message',
           preview:     content.substring(0, 120),
           body:        msg.body.content,
-          tags:        [category],
-          category,
-          priority,
+          tags:        [categorize(content)],
+          category:    categorize(content),
+          priority:    scorePriority(content),
           channel:     chat.chatType !== 'oneOnOne' ? `#${chat.topic || 'chat'}` : null,
           unread:      true,
           received_at: msg.createdDateTime || new Date().toISOString(),
         });
       }
+    }
+    if (rows.length) {
+      await supabaseAdmin.from('messages').delete().eq('user_id', userId).eq('source', 'teams');
+      await supabaseAdmin.from('messages').insert(rows);
     }
   } catch (e) {
     console.warn('Teams message sync:', e.message);
@@ -76,39 +124,38 @@ async function syncCalendarMeetings(userId, accessToken) {
       accessToken
     );
 
+    // Clear existing synced meetings before re-inserting to prevent duplicates
+    await supabaseAdmin.from('meetings').delete().eq('user_id', userId);
+
+    const rows = [];
     for (const event of (calRes.value || [])) {
-      const startDt = new Date(event.start?.dateTime
-        ? event.start.dateTime + (event.start.timeZone === 'UTC' ? 'Z' : '')
-        : Date.now());
+      // Read date/time directly from the ISO string to avoid UTC timezone shift
+      const startRaw = event.start?.dateTime || event.start?.date || '';
+      const endRaw   = event.end?.dateTime   || event.end?.date   || '';
+      const date     = startRaw.substring(0, 10);
+      const time     = startRaw.length > 10 ? startRaw.substring(11, 16) : '00:00';
 
-      const endDt     = new Date(event.end?.dateTime
-        ? event.end.dateTime   + (event.end.timeZone   === 'UTC' ? 'Z' : '')
-        : startDt.getTime() + 3600000);
-
-      const durationMin = Math.round((endDt - startDt) / 60000);
+      const startMs    = startRaw ? new Date(startRaw).getTime() : Date.now();
+      const endMs      = endRaw   ? new Date(endRaw).getTime()   : startMs + 3600000;
+      const durationMin = Math.round((endMs - startMs) / 60000);
       const duration    = durationMin >= 60 ? `${Math.round(durationMin / 60)} hr` : `${durationMin} min`;
-      const date        = startDt.toISOString().split('T')[0];
-      const time        = startDt.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false });
 
       const joinUrl = event.onlineMeeting?.joinUrl || null;
       let platform  = 'inperson';
       if (joinUrl?.includes('teams.microsoft.com')) platform = 'teams';
       else if (joinUrl?.includes('zoom.us'))        platform = 'zoom';
       else if (joinUrl?.includes('meet.google.com'))platform = 'gmeet';
-      else if (joinUrl)                             platform = 'teams'; // default online = teams
+      else if (joinUrl)                             platform = 'teams';
 
       const attendees = (event.attendees || []).map(a => ({
         name:  a.emailAddress?.name    || a.emailAddress?.address || '',
         email: a.emailAddress?.address || '',
       }));
 
-      await supabaseAdmin.from('meetings').insert({
+      rows.push({
         user_id:   userId,
         title:     event.subject || 'Untitled meeting',
-        platform,
-        date,
-        time,
-        duration,
+        platform,  date, time, duration,
         link:      joinUrl,
         attendees: JSON.stringify(attendees),
         agenda:    JSON.stringify([]),
@@ -116,6 +163,7 @@ async function syncCalendarMeetings(userId, accessToken) {
         ai_prep:   '',
       });
     }
+    if (rows.length) await supabaseAdmin.from('meetings').insert(rows);
   } catch (e) {
     console.warn('Calendar sync:', e.message);
   }
@@ -226,8 +274,9 @@ export default async function handler(req) {
     }).catch(e => console.warn('Calendar subscription failed:', e.message));
   }
 
-  // Run initial data sync (non-blocking — errors are caught internally)
+  // Run initial data sync (errors are caught internally per function)
   await Promise.allSettled([
+    syncOutlookEmails(userId, access_token),
     syncTeamsMessages(userId, access_token),
     syncCalendarMeetings(userId, access_token),
   ]);

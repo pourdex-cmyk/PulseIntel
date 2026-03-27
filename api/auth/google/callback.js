@@ -1,7 +1,7 @@
 import { supabaseAdmin } from '../../../lib/supabase.js';
 import { encryptGoogleToken, setupGmailWatch, gmailGet, calendarGet, parseGmailHeaders } from '../../../lib/googleApi.js';
 
-export const config = { runtime: 'edge' };
+export const config = { runtime: 'nodejs', maxDuration: 60 };
 
 async function decryptState(state, secret) {
   const raw   = atob(state);
@@ -34,25 +34,22 @@ function categorize(text) {
 
 async function syncGmailMessages(userId, accessToken) {
   try {
-    // Fetch last 50 inbox messages (IDs only)
-    const listRes = await gmailGet('/messages?labelIds=INBOX&maxResults=50', accessToken);
+    const listRes = await gmailGet('/messages?labelIds=INBOX&maxResults=25', accessToken);
     const msgIds  = (listRes.messages || []).map(m => m.id);
 
-    for (const msgId of msgIds.slice(0, 50)) {
+    const rows = [];
+    for (const msgId of msgIds) {
       try {
         const msg = await gmailGet(
           `/messages/${msgId}?format=metadata&metadataHeaders=Subject,From,Date`,
           accessToken
         );
-
         if ((msg.labelIds || []).includes('SENT')) continue;
 
         const { subject, senderName, senderEmail, date, snippet } = parseGmailHeaders(msg);
-        const text     = `${subject} ${snippet}`;
-        const priority = scorePriority(text);
-        const category = categorize(text);
+        const text = `${subject} ${snippet}`;
 
-        await supabaseAdmin.from('messages').insert({
+        rows.push({
           user_id:     userId,
           source:      'gmail',
           type:        'email',
@@ -61,14 +58,19 @@ async function syncGmailMessages(userId, accessToken) {
           subject,
           preview:     snippet.substring(0, 120),
           body:        `<p>${snippet}</p>`,
-          tags:        [category],
-          category,
-          priority,
+          tags:        [categorize(text)],
+          category:    categorize(text),
+          priority:    scorePriority(text),
           channel:     null,
           unread:      (msg.labelIds || []).includes('UNREAD'),
           received_at: date ? new Date(date).toISOString() : new Date().toISOString(),
         });
       } catch { continue; }
+    }
+
+    if (rows.length) {
+      await supabaseAdmin.from('messages').delete().eq('user_id', userId).eq('source', 'gmail');
+      await supabaseAdmin.from('messages').insert(rows);
     }
   } catch (e) {
     console.warn('Gmail initial sync:', e.message);
@@ -86,34 +88,38 @@ async function syncGoogleCalendar(userId, accessToken) {
       accessToken
     );
 
-    for (const event of (res.items || [])) {
-      const startDt = new Date(event.start?.dateTime || event.start?.date || Date.now());
-      const endDt   = new Date(event.end?.dateTime   || event.end?.date   || startDt.getTime() + 3600000);
+    // Clear existing synced meetings before re-inserting to prevent duplicates
+    await supabaseAdmin.from('meetings').delete().eq('user_id', userId);
 
-      const durationMin = Math.round((endDt - startDt) / 60000);
+    const rows = [];
+    for (const event of (res.items || [])) {
+      // Read date/time directly from ISO string to avoid UTC timezone shift
+      const startRaw = event.start?.dateTime || event.start?.date || '';
+      const endRaw   = event.end?.dateTime   || event.end?.date   || '';
+      const date     = startRaw.substring(0, 10);
+      const time     = startRaw.length > 10 ? startRaw.substring(11, 16) : '00:00';
+
+      const startMs    = startRaw ? new Date(startRaw).getTime() : Date.now();
+      const endMs      = endRaw   ? new Date(endRaw).getTime()   : startMs + 3600000;
+      const durationMin = Math.round((endMs - startMs) / 60000);
       const duration    = durationMin >= 60 ? `${Math.round(durationMin / 60)} hr` : `${durationMin} min`;
-      const date        = startDt.toISOString().split('T')[0];
-      const time        = startDt.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false });
 
       const joinUrl  = event.hangoutLink || null;
       let   platform = 'inperson';
-      if (joinUrl?.includes('meet.google.com'))    platform = 'gmeet';
-      else if (joinUrl?.includes('zoom.us'))       platform = 'zoom';
+      if (joinUrl?.includes('meet.google.com'))      platform = 'gmeet';
+      else if (joinUrl?.includes('zoom.us'))         platform = 'zoom';
       else if (joinUrl?.includes('teams.microsoft')) platform = 'teams';
-      else if (joinUrl)                            platform = 'gmeet';
+      else if (joinUrl)                              platform = 'gmeet';
 
       const attendees = (event.attendees || []).map(a => ({
         name:  a.displayName || a.email || '',
         email: a.email || '',
       }));
 
-      await supabaseAdmin.from('meetings').insert({
+      rows.push({
         user_id:   userId,
         title:     event.summary || 'Untitled meeting',
-        platform,
-        date,
-        time,
-        duration,
+        platform,  date, time, duration,
         link:      joinUrl,
         attendees: JSON.stringify(attendees),
         agenda:    JSON.stringify([]),
@@ -121,6 +127,7 @@ async function syncGoogleCalendar(userId, accessToken) {
         ai_prep:   '',
       });
     }
+    if (rows.length) await supabaseAdmin.from('meetings').insert(rows);
   } catch (e) {
     console.warn('Google Calendar sync:', e.message);
   }
@@ -169,11 +176,11 @@ export default async function handler(req) {
   const { access_token, refresh_token, expires_in } = await tokenRes.json();
 
   // Get user's Gmail address for webhook lookup
-  const profileRes  = await fetch('https://www.googleapis.com/oauth2/v2/userinfo', {
+  const profileRes = await fetch('https://www.googleapis.com/oauth2/v2/userinfo', {
     headers: { Authorization: `Bearer ${access_token}` },
   });
-  const profile     = profileRes.ok ? await profileRes.json() : {};
-  const gmailEmail  = profile.email || null;
+  const profile    = profileRes.ok ? await profileRes.json() : {};
+  const gmailEmail = profile.email || null;
 
   // Encrypt and store token
   const encToken = await encryptGoogleToken({
@@ -197,7 +204,7 @@ export default async function handler(req) {
     );
   }
 
-  // Initial data sync
+  // Initial data sync (errors caught internally per function)
   await Promise.allSettled([
     syncGmailMessages(userId, access_token),
     syncGoogleCalendar(userId, access_token),
