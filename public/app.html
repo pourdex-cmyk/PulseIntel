@@ -2234,9 +2234,14 @@ async function init() {
       STATE.claudeKey=connectors?.claude_configured?"server":"demo-mode";
       setApiStatus(connectors?.claude_configured?"ready":"error");
       if (!connectors?.claude_configured) showToast("Add your Claude API key in Settings");
-      // Load messages from API
+      // Load messages + meetings from API
       try {
-        const [emailData,chatData]=await Promise.all([API.messages.list({tab:"email",limit:100}),API.messages.list({tab:"chat",limit:100})]);
+        const [emailData,chatData,meetingsData]=await Promise.all([
+          API.messages.list({tab:"email",limit:100}),
+          API.messages.list({tab:"chat",limit:100}),
+          API.meetings.list('all'),
+        ]);
+        // Replace MESSAGES with real data (always clear demo)
         const apiMsgs=[...(emailData?.messages||[]),...(chatData?.messages||[])];
         MESSAGES.length=0;
         apiMsgs.forEach(m=>MESSAGES.push({
@@ -2246,7 +2251,18 @@ async function init() {
           tags:m.tags||[], priority:m.priority||50, category:m.category||"fyi",
           unread:m.unread!==false, channel:m.channel||null,
         }));
-      } catch(e) { console.warn("Message load failed:", e.message); }
+        // Replace meetings with real data (clears any cached demo meetings)
+        if (meetingsData?.meetings !== undefined) {
+          saveMeetings((meetingsData.meetings||[]).map(m=>({
+            id:m.id, title:m.title, platform:m.platform||'teams',
+            date:m.date, time:m.time, duration:m.duration||'1 hr', link:m.link||null,
+            attendees: Array.isArray(m.attendees)?m.attendees:(typeof m.attendees==='string'?JSON.parse(m.attendees||'[]'):[]),
+            agenda:    Array.isArray(m.agenda)   ?m.agenda   :(typeof m.agenda   ==='string'?JSON.parse(m.agenda   ||'[]'):[]),
+            needs:     Array.isArray(m.needs)    ?m.needs    :(typeof m.needs    ==='string'?JSON.parse(m.needs    ||'[]'):[]),
+            notes:m.notes||'', relatedMsgIds:m.related_msg_ids||[], aiPrep:m.ai_prep||'',
+          })));
+        }
+      } catch(e) { console.warn("Data load failed:", e.message); }
       // Realtime subscription
       if (window.API?.subscribeToMessages) {
         API.subscribeToMessages(newMsg=>{
@@ -2269,15 +2285,17 @@ async function init() {
 
   // Handle OAuth redirect results
   const qp = new URLSearchParams(window.location.search);
-  if (qp.get('connected') === 'microsoft') {
-    showToast("Microsoft Teams & Outlook connected ✓");
+  const connected = qp.get('connected');
+  if (connected === 'microsoft') {
     ['teams','outlook'].forEach(src => { STATE.connected[src]=true; STATE.activeSources.add(src); updateSettingsStatus(src,true); });
     window.history.replaceState({}, '', '/app');
+    // Re-fetch data now that messages were synced during OAuth callback
+    await _refreshFromAPI("Microsoft Teams & Outlook connected — messages synced ✓");
   }
-  if (qp.get('connected') === 'google') {
-    showToast("Gmail & Google Calendar connected ✓");
+  if (connected === 'google') {
     STATE.connected.gmail=true; STATE.activeSources.add('gmail'); updateSettingsStatus('gmail',true);
     window.history.replaceState({}, '', '/app');
+    await _refreshFromAPI("Gmail & Google Calendar connected — messages synced ✓");
   }
   const msErr = qp.get('error');
   if (msErr) {
@@ -2290,6 +2308,36 @@ async function init() {
     showToast(msgs[msErr] || `Connection error: ${msErr}`);
     window.history.replaceState({}, '', '/app');
   }
+}
+
+async function _refreshFromAPI(toast) {
+  try {
+    const [emailData,chatData,meetingsData]=await Promise.all([
+      API.messages.list({tab:"email",limit:100}),
+      API.messages.list({tab:"chat",limit:100}),
+      API.meetings.list('all'),
+    ]);
+    MESSAGES.length=0;
+    [...(emailData?.messages||[]),...(chatData?.messages||[])].forEach(m=>MESSAGES.push({
+      id:m.id, source:m.source, type:m.type, sender:m.sender, handle:m.handle,
+      time:new Date(m.received_at).toLocaleTimeString("en-US",{hour:"numeric",minute:"2-digit"}),
+      subject:m.subject, preview:m.preview, body:m.body,
+      tags:m.tags||[], priority:m.priority||50, category:m.category||"fyi",
+      unread:m.unread!==false, channel:m.channel||null,
+    }));
+    if (meetingsData?.meetings !== undefined) {
+      saveMeetings((meetingsData.meetings||[]).map(m=>({
+        id:m.id, title:m.title, platform:m.platform||'teams',
+        date:m.date, time:m.time, duration:m.duration||'1 hr', link:m.link||null,
+        attendees: Array.isArray(m.attendees)?m.attendees:(typeof m.attendees==='string'?JSON.parse(m.attendees||'[]'):[]),
+        agenda:    Array.isArray(m.agenda)   ?m.agenda   :(typeof m.agenda   ==='string'?JSON.parse(m.agenda   ||'[]'):[]),
+        needs:     Array.isArray(m.needs)    ?m.needs    :(typeof m.needs    ==='string'?JSON.parse(m.needs    ||'[]'):[]),
+        notes:m.notes||'', relatedMsgIds:m.related_msg_ids||[], aiPrep:m.ai_prep||'',
+      })));
+    }
+    updateTabCounts(); renderFeed(); renderMeetList();
+    if (toast) showToast(toast);
+  } catch(e) { console.warn('Refresh failed:', e.message); }
 }
 
 function _localFallbackInit() {
