@@ -1,33 +1,13 @@
 import { supabaseAdmin } from '../../lib/supabase.js';
 import { json, error } from '../../lib/middleware.js';
+import { getMsAccessToken, graphGet, scorePriority, categorize } from '../../lib/msGraph.js';
 
 export const config = { runtime: 'nodejs' };
-
-function scorePriority(subject, body, importance) {
-  let score = 40;
-  const text = ((subject || '') + ' ' + (body || '')).toLowerCase();
-  if (importance === 'high') score += 30;
-  if (/urgent|asap|action required|immediate|critical/i.test(text)) score += 30;
-  if (/today|eod|by \d|deadline/i.test(text)) score += 20;
-  if (/\?/.test(text)) score += 10;
-  if (/unsubscribe|no-reply|noreply|newsletter|notification/i.test(text)) score -= 40;
-  if (/fyi|heads up|reminder/i.test(text)) score -= 15;
-  return Math.min(100, Math.max(1, score));
-}
-
-function categorize(subject, body) {
-  const text = ((subject || '') + ' ' + (body || '')).toLowerCase();
-  if (/urgent|action required|please review|approval needed|decision/i.test(text)) return 'action';
-  if (/meeting|calendar|invite|zoom|teams|call|sync/i.test(text)) return 'meeting';
-  if (/unsubscribe|no-reply|noreply|newsletter|automated/i.test(text)) return 'noise';
-  if (/fyi|heads up|reminder|for your information/i.test(text)) return 'fyi';
-  return 'action';
-}
 
 export default async function handler(req) {
   const url = new URL(req.url);
 
-  // Microsoft Graph sends a validation token on subscription creation
+  // Microsoft Graph subscription validation
   const validationToken = url.searchParams.get('validationToken');
   if (validationToken) {
     return new Response(validationToken, { headers: { 'Content-Type': 'text/plain' } });
@@ -40,38 +20,74 @@ export default async function handler(req) {
   if (!uid) return json({ ok: true });
 
   const { data: settings } = await supabaseAdmin
-    .from('user_settings').select('user_id, outlook_token').eq('outlook_uid', uid).single();
+    .from('user_settings').select('user_id').eq('outlook_uid', uid).single();
   if (!settings) return json({ ok: true });
 
+  const userId      = settings.user_id;
+  const accessToken = await getMsAccessToken(supabaseAdmin, userId);
   const expectedState = process.env.OUTLOOK_CLIENT_STATE;
+
   for (const notification of (payload.value || [])) {
     if (expectedState && notification.clientState !== expectedState) continue;
     if (notification.changeType !== 'created') continue;
 
-    const resource = notification.resourceData || {};
-    const subject  = resource.subject || '(No subject)';
-    const from     = resource.from?.emailAddress || {};
-    const body     = resource.bodyPreview || '';
-    const importance = resource.importance || 'normal';
+    let subject    = '(No subject)';
+    let fromName   = 'Unknown';
+    let fromEmail  = '';
+    let bodyText   = '';
+    let bodyHtml   = '';
+    let importance = 'normal';
+    let receivedAt = new Date().toISOString();
 
-    const priority = scorePriority(subject, body, importance);
-    const category = categorize(subject, body);
+    // Fetch the full email from Graph for complete body content
+    if (accessToken && notification.resourceData?.id) {
+      try {
+        const msgId  = notification.resourceData.id;
+        const full   = await graphGet(
+          `/me/messages/${msgId}?$select=subject,from,body,importance,receivedDateTime,bodyPreview`,
+          accessToken
+        );
+        subject    = full.subject    || '(No subject)';
+        fromName   = full.from?.emailAddress?.name    || full.from?.emailAddress?.address || 'Unknown';
+        fromEmail  = full.from?.emailAddress?.address || '';
+        bodyHtml   = full.body?.content               || '';
+        bodyText   = bodyHtml.replace(/<[^>]+>/g, '').trim();
+        importance = full.importance || 'normal';
+        receivedAt = full.receivedDateTime || receivedAt;
+      } catch { /* fall back to notification payload */ }
+    }
+
+    // Fall back to whatever came in the notification if Graph fetch failed
+    if (!bodyText) {
+      const r   = notification.resourceData || {};
+      subject    = r.subject    || subject;
+      fromName   = r.from?.emailAddress?.name    || r.from?.emailAddress?.address || fromName;
+      fromEmail  = r.from?.emailAddress?.address || fromEmail;
+      bodyText   = r.bodyPreview || '';
+      bodyHtml   = `<p>${bodyText}</p>`;
+      importance = r.importance  || importance;
+      receivedAt = r.receivedDateTime || receivedAt;
+    }
+
+    const baseText = `${subject} ${bodyText}${importance === 'high' ? ' urgent' : ''}`;
+    const priority = scorePriority(baseText);
+    const category = categorize(`${subject} ${bodyText}`);
 
     await supabaseAdmin.from('messages').insert({
-      user_id:     settings.user_id,
+      user_id:     userId,
       source:      'outlook',
       type:        'email',
-      sender:      from.name || from.address || 'Unknown',
-      handle:      from.address || '',
+      sender:      fromName,
+      handle:      fromEmail,
       subject,
-      preview:     body.substring(0, 120),
-      body:        `<p>${body}</p>`,
+      preview:     bodyText.substring(0, 120),
+      body:        bodyHtml || `<p>${bodyText}</p>`,
       tags:        [category],
       category,
       priority,
       channel:     null,
       unread:      true,
-      received_at: resource.receivedDateTime || new Date().toISOString(),
+      received_at: receivedAt,
     });
   }
 
