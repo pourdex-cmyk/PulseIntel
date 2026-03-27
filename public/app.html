@@ -885,15 +885,11 @@ html,body{height:100%;font-family:var(--sans);background:var(--bg);color:var(--t
           <span id="s-status-teams" style="font-family:var(--mono);font-size:9px;padding:3px 9px;border-radius:10px;background:var(--surface);color:var(--text3);text-transform:uppercase;letter-spacing:0.06em;">Not connected</span>
         </div>
         <div style="background:var(--bg3);border-radius:8px;padding:12px 14px;margin-bottom:10px;">
-          <div style="font-family:var(--mono);font-size:9px;color:var(--text3);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:6px;">Incoming Webhook URL — paste into Teams App Studio → Connector</div>
-          <div style="display:flex;gap:6px;">
-            <input id="s-teams-wh" readonly style="flex:1;background:var(--bg2);border:1px solid var(--border);border-radius:6px;padding:7px 10px;font-family:var(--mono);font-size:10px;color:var(--text);outline:none;" value=""/>
-            <button onclick="sCopy('s-teams-wh')" style="padding:7px 10px;border-radius:6px;border:1px solid var(--border);background:var(--surface);color:var(--text2);font-family:var(--mono);font-size:10px;cursor:pointer;">Copy</button>
-          </div>
+          <div style="font-family:var(--mono);font-size:9px;color:var(--text3);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:4px;">Microsoft OAuth — authorizes both Teams &amp; Outlook in one click</div>
+          <div style="font-family:var(--mono);font-size:9px;color:var(--text3);">Webhook subscriptions register automatically after authorization.</div>
         </div>
         <div style="display:flex;gap:8px;">
-          <input type="password" id="s-teams-token" placeholder="Teams Bot Token or App Token..." style="flex:1;background:var(--bg3);border:1px solid var(--border);border-radius:7px;padding:8px 12px;font-family:var(--mono);font-size:10px;color:var(--text);outline:none;"/>
-          <button onclick="sConnect('teams')" style="padding:8px 16px;border-radius:7px;border:none;background:#6264a7;color:#fff;font-family:var(--mono);font-size:10px;cursor:pointer;font-weight:500;">Connect</button>
+          <button onclick="sMicrosoftOAuth()" style="padding:8px 16px;border-radius:7px;border:none;background:#6264a7;color:#fff;font-family:var(--mono);font-size:10px;cursor:pointer;font-weight:500;">Authorize with Microsoft</button>
           <button onclick="sDisconnect('teams')" style="padding:8px 12px;border-radius:7px;border:1px solid var(--border);background:transparent;color:var(--text3);font-family:var(--mono);font-size:10px;cursor:pointer;">Disconnect</button>
         </div>
       </div>
@@ -937,15 +933,11 @@ html,body{height:100%;font-family:var(--sans);background:var(--bg);color:var(--t
           <span id="s-status-outlook" style="font-family:var(--mono);font-size:9px;padding:3px 9px;border-radius:10px;background:var(--surface);color:var(--text3);text-transform:uppercase;letter-spacing:0.06em;">Not connected</span>
         </div>
         <div style="background:var(--bg3);border-radius:8px;padding:12px 14px;margin-bottom:10px;">
-          <div style="font-family:var(--mono);font-size:9px;color:var(--text3);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:6px;">Microsoft Graph Webhook — registers automatically on connect</div>
-          <div style="display:flex;gap:6px;">
-            <input id="s-outlook-wh" readonly style="flex:1;background:var(--bg2);border:1px solid var(--border);border-radius:6px;padding:7px 10px;font-family:var(--mono);font-size:10px;color:var(--text);outline:none;" value=""/>
-            <button onclick="sCopy('s-outlook-wh')" style="padding:7px 10px;border-radius:6px;border:1px solid var(--border);background:var(--surface);color:var(--text2);font-family:var(--mono);font-size:10px;cursor:pointer;">Copy</button>
-          </div>
+          <div style="font-family:var(--mono);font-size:9px;color:var(--text3);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:4px;">Microsoft OAuth — shared with Teams</div>
+          <div style="font-family:var(--mono);font-size:9px;color:var(--text3);">Click "Authorize with Microsoft" on the Teams card above — one login connects both.</div>
         </div>
         <div style="display:flex;gap:8px;">
-          <input type="password" id="s-outlook-token" placeholder="Microsoft Graph API token or OAuth2..." style="flex:1;background:var(--bg3);border:1px solid var(--border);border-radius:7px;padding:8px 12px;font-family:var(--mono);font-size:10px;color:var(--text);outline:none;"/>
-          <button onclick="sConnect('outlook')" style="padding:8px 16px;border-radius:7px;border:none;background:#0072c6;color:#fff;font-family:var(--mono);font-size:10px;cursor:pointer;font-weight:500;">Connect</button>
+          <button onclick="sMicrosoftOAuth()" style="padding:8px 16px;border-radius:7px;border:none;background:#0072c6;color:#fff;font-family:var(--mono);font-size:10px;cursor:pointer;font-weight:500;">Authorize with Microsoft</button>
           <button onclick="sDisconnect('outlook')" style="padding:8px 12px;border-radius:7px;border:1px solid var(--border);background:transparent;color:var(--text3);font-family:var(--mono);font-size:10px;cursor:pointer;">Disconnect</button>
         </div>
       </div>
@@ -1408,6 +1400,12 @@ async function sSaveClaude() {
   const st = document.getElementById("s-claude-status");
   if (st) st.innerHTML = `<span style="width:6px;height:6px;border-radius:50%;background:var(--green);display:inline-block;"></span>&nbsp;API key saved`;
   setApiStatus("ready"); showToast("Claude API key saved ✓");
+}
+
+function sMicrosoftOAuth() {
+  const token = API.auth._token;
+  if (!token) { showToast("Please log in first"); return; }
+  window.location.href = `/api/auth/microsoft?token=${encodeURIComponent(token)}`;
 }
 
 async function sConnect(src) {
@@ -2266,6 +2264,20 @@ async function init() {
   if (!API.auth.isLoggedIn) seedMeetings();
   updateTabCounts();
   switchTab("email");
+
+  // Handle OAuth redirect results
+  const qp = new URLSearchParams(window.location.search);
+  if (qp.get('connected') === 'microsoft') {
+    showToast("Microsoft Teams & Outlook connected ✓");
+    ['teams','outlook'].forEach(src => { STATE.connected[src]=true; STATE.activeSources.add(src); updateSettingsStatus(src,true); });
+    window.history.replaceState({}, '', '/app');
+  }
+  const msErr = qp.get('error');
+  if (msErr) {
+    const msgs = { ms_denied:'Microsoft authorization cancelled', ms_token_failed:'Microsoft token exchange failed — check Azure app config', ms_expired:'Authorization expired — please try again', ms_invalid_state:'Invalid OAuth state — please try again' };
+    showToast(msgs[msErr] || `Connection error: ${msErr}`);
+    window.history.replaceState({}, '', '/app');
+  }
 }
 
 function _localFallbackInit() {
