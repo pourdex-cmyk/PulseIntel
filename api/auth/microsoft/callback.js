@@ -1,7 +1,7 @@
 import { supabaseAdmin } from '../../../lib/supabase.js';
 import { graphGet, scorePriority, categorize } from '../../../lib/msGraph.js';
 
-export const config = { runtime: 'nodejs', maxDuration: 60 };
+export const config = { runtime: 'edge' };
 
 async function encrypt(text, secret) {
   const key = await crypto.subtle.importKey('raw', new TextEncoder().encode(secret.slice(0, 32).padEnd(32, '0')), { name: 'AES-GCM' }, false, ['encrypt']);
@@ -170,11 +170,12 @@ async function syncCalendarMeetings(userId, accessToken) {
 // ── Main handler ──────────────────────────────────────────────────────────────
 
 export default async function handler(req) {
+  const appUrl = process.env.APP_URL || 'https://acgpulseintel.com';
+  try {
   const url     = new URL(req.url);
   const code    = url.searchParams.get('code');
   const state   = url.searchParams.get('state');
   const msError = url.searchParams.get('error');
-  const appUrl  = process.env.APP_URL || 'https://your-app.vercel.app';
   const secret  = process.env.JWT_SECRET || 'dev-secret-32-chars-minimum!!!';
 
   if (msError) {
@@ -280,4 +281,8 @@ export default async function handler(req) {
   ]);
 
   return Response.redirect(`${appUrl}/app?connected=microsoft`, 302);
+  } catch (e) {
+    console.error('Microsoft callback crash:', e.message, e.stack);
+    return Response.redirect(`${appUrl}/app?error=ms_callback_error`, 302);
+  }
 }

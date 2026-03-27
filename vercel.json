@@ -5,8 +5,8 @@
   "functions": {
     "api/ai/*.js":                  { "maxDuration": 60 },
     "api/webhooks/*.js":            { "maxDuration": 10 },
-    "api/auth/microsoft/*.js":      { "maxDuration": 60 },
-    "api/auth/google/*.js":         { "maxDuration": 60 },
+    "api/auth/microsoft/*.js":      { "maxDuration": 30 },
+    "api/auth/google/*.js":         { "maxDuration": 30 },
     "api/auth/*.js":                { "maxDuration": 30 },
     "api/messages/*.js":            { "maxDuration": 30 },
     "api/meetings/*.js":            { "maxDuration": 30 },

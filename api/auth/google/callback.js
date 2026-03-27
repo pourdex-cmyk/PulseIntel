@@ -1,7 +1,7 @@
 import { supabaseAdmin } from '../../../lib/supabase.js';
 import { encryptGoogleToken, setupGmailWatch, gmailGet, calendarGet, parseGmailHeaders } from '../../../lib/googleApi.js';
 
-export const config = { runtime: 'nodejs', maxDuration: 60 };
+export const config = { runtime: 'edge' };
 
 async function decryptState(state, secret) {
   const raw   = atob(state);
@@ -136,11 +136,12 @@ async function syncGoogleCalendar(userId, accessToken) {
 // ── Main handler ──────────────────────────────────────────────────────────────
 
 export default async function handler(req) {
+  const appUrl = process.env.APP_URL || 'https://acgpulseintel.com';
+  try {
   const url      = new URL(req.url);
   const code     = url.searchParams.get('code');
   const state    = url.searchParams.get('state');
   const gError   = url.searchParams.get('error');
-  const appUrl   = process.env.APP_URL || 'https://acgpulseintel.com';
   const secret   = process.env.JWT_SECRET || 'dev-secret-32-chars-minimum!!!';
 
   if (gError) {
@@ -211,4 +212,8 @@ export default async function handler(req) {
   ]);
 
   return Response.redirect(`${appUrl}/app?connected=google`, 302);
+  } catch (e) {
+    console.error('Google callback crash:', e.message, e.stack);
+    return Response.redirect(`${appUrl}/app?error=google_callback_error`, 302);
+  }
 }
