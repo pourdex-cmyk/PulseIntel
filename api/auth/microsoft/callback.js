@@ -22,11 +22,9 @@ async function decryptState(state, secret) {
 
 async function syncOutlookEmails(userId, accessToken) {
   try {
-    const since = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
     const emailsRes = await graphGet(
       `/me/mailFolders/Inbox/messages?$top=25&$orderby=receivedDateTime desc` +
-      `&$select=subject,from,body,bodyPreview,importance,receivedDateTime,isRead` +
-      `&$filter=receivedDateTime ge ${since}`,
+      `&$select=subject,from,body,bodyPreview,importance,receivedDateTime,isRead`,
       accessToken
     );
 
@@ -69,7 +67,7 @@ async function syncOutlookEmails(userId, accessToken) {
 async function syncTeamsMessages(userId, accessToken) {
   try {
     // Get most-recently-active chats
-    const chatsRes = await graphGet('/me/chats?$top=10&$orderby=lastUpdatedDateTime desc', accessToken);
+    const chatsRes = await graphGet('/me/chats?$top=10', accessToken);
     const chats = chatsRes.value || [];
 
     const rows = [];

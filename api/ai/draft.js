@@ -2,7 +2,7 @@ import Anthropic from '@anthropic-ai/sdk';
 import { supabaseAdmin } from '../../lib/supabase.js';
 import { json, error, withAuth, decryptToken } from '../../lib/middleware.js';
 
-export const config = { runtime: 'edge' };
+export const config = { runtime: 'nodejs' };
 
 export default withAuth(async (req, { user }) => {
   if (req.method !== 'POST') return error('Method not allowed', 405);
