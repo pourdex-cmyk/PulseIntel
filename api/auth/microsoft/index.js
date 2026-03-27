@@ -29,7 +29,7 @@ export default async function handler(req) {
   authUrl.searchParams.set('client_id',     clientId);
   authUrl.searchParams.set('response_type', 'code');
   authUrl.searchParams.set('redirect_uri',  `${appUrl}/api/auth/microsoft/callback`);
-  authUrl.searchParams.set('scope',         'offline_access Mail.Read Mail.Send Chat.Read User.Read');
+  authUrl.searchParams.set('scope',         'offline_access Mail.ReadWrite Mail.Send Chat.ReadWrite Calendars.ReadWrite User.Read');
   authUrl.searchParams.set('state',         state);
   authUrl.searchParams.set('response_mode', 'query');
   authUrl.searchParams.set('prompt',        'consent'); // ensures refresh_token is returned
