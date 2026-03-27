@@ -185,7 +185,7 @@ export default async function handler(req) {
   await supabaseAdmin.from('user_settings').upsert({
     user_id:     userId,
     gmail_token: encToken,
-    gmail_email: gmailEmail,
+    gmail_uid:   gmailEmail, // repurpose gmail_uid to store email for webhook lookup
     updated_at:  new Date().toISOString(),
   });
 

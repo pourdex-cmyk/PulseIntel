@@ -47,11 +47,11 @@ export default async function handler(req) {
   const { emailAddress, historyId } = notification;
   if (!emailAddress || !historyId) return json({ ok: true });
 
-  // Look up user by their stored Gmail address
+  // Look up user by Gmail address stored in gmail_uid column
   const { data: settings } = await supabaseAdmin
     .from('user_settings')
     .select('user_id')
-    .eq('gmail_email', emailAddress)
+    .eq('gmail_uid', emailAddress)
     .single();
   if (!settings) return json({ ok: true });
 
