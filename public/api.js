@@ -7,9 +7,10 @@
 const API = (() => {
 
   // ── Auth state ─────────────────────────────────────────────
-  let _token     = sessionStorage.getItem('pi_token')     || null;
-  let _refreshTk = sessionStorage.getItem('pi_refresh')   || null;
-  let _user      = JSON.parse(sessionStorage.getItem('pi_user') || 'null');
+  // Check both sessionStorage (set by api.js) and localStorage (set by landing page login)
+  let _token     = sessionStorage.getItem('pi_token')   || localStorage.getItem('pulse_token')   || null;
+  let _refreshTk = sessionStorage.getItem('pi_refresh') || localStorage.getItem('pulse_refresh') || null;
+  let _user      = JSON.parse(sessionStorage.getItem('pi_user') || localStorage.getItem('pulse_user') || 'null');
   let _profile   = JSON.parse(sessionStorage.getItem('pi_profile') || 'null');
 
   // ── Base request ───────────────────────────────────────────
@@ -50,14 +51,19 @@ const API = (() => {
   function setSession(token, refresh) {
     _token     = token;
     _refreshTk = refresh;
-    sessionStorage.setItem('pi_token',   token);
-    sessionStorage.setItem('pi_refresh', refresh);
+    sessionStorage.setItem('pi_token',    token);
+    sessionStorage.setItem('pi_refresh',  refresh);
+    localStorage.setItem('pulse_token',   token);
+    localStorage.setItem('pulse_refresh', refresh);
   }
 
   function logout() {
     _token = _refreshTk = _user = _profile = null;
     sessionStorage.clear();
-    window.location.href = '/login';
+    localStorage.removeItem('pulse_token');
+    localStorage.removeItem('pulse_refresh');
+    localStorage.removeItem('pulse_user');
+    window.location.href = '/';
   }
 
   // ── Auth ───────────────────────────────────────────────────
