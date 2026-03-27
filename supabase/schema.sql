@@ -35,6 +35,7 @@ create table if not exists user_settings (
   slack_token          text,
   outlook_token        text,
   gmail_token          text,
+  gmail_email          text,        -- stored on OAuth connect for webhook lookup
   -- Webhook user identifiers (short hash of user_id for URL safety)
   teams_uid            text unique,
   slack_uid            text unique,
@@ -42,6 +43,10 @@ create table if not exists user_settings (
   gmail_uid            text unique,
   updated_at           timestamptz default now()
 );
+
+-- Migration (safe to re-run)
+alter table user_settings add column if not exists gmail_email text;
+create index if not exists idx_user_settings_gmail_email on user_settings(gmail_email);
 
 -- ── MESSAGES ─────────────────────────────────────────────────
 create table if not exists messages (

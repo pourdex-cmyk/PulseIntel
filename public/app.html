@@ -955,15 +955,11 @@ html,body{height:100%;font-family:var(--sans);background:var(--bg);color:var(--t
           <span id="s-status-gmail" style="font-family:var(--mono);font-size:9px;padding:3px 9px;border-radius:10px;background:var(--surface);color:var(--text3);text-transform:uppercase;letter-spacing:0.06em;">Not connected</span>
         </div>
         <div style="background:var(--bg3);border-radius:8px;padding:12px 14px;margin-bottom:10px;">
-          <div style="font-family:var(--mono);font-size:9px;color:var(--text3);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:6px;">Gmail Push Notification — Pub/Sub topic auto-configures on connect</div>
-          <div style="display:flex;gap:6px;">
-            <input id="s-gmail-wh" readonly style="flex:1;background:var(--bg2);border:1px solid var(--border);border-radius:6px;padding:7px 10px;font-family:var(--mono);font-size:10px;color:var(--text);outline:none;" value=""/>
-            <button onclick="sCopy('s-gmail-wh')" style="padding:7px 10px;border-radius:6px;border:1px solid var(--border);background:var(--surface);color:var(--text2);font-family:var(--mono);font-size:10px;cursor:pointer;">Copy</button>
-          </div>
+          <div style="font-family:var(--mono);font-size:9px;color:var(--text3);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:4px;">Google OAuth — Gmail + Google Calendar</div>
+          <div style="font-family:var(--mono);font-size:9px;color:var(--text3);">Connects inbox, sends replies, syncs meetings. Push notifications auto-configure on connect.</div>
         </div>
         <div style="display:flex;gap:8px;">
-          <input type="password" id="s-gmail-token" placeholder="Google OAuth2 token or API key..." style="flex:1;background:var(--bg3);border:1px solid var(--border);border-radius:7px;padding:8px 12px;font-family:var(--mono);font-size:10px;color:var(--text);outline:none;"/>
-          <button onclick="sConnect('gmail')" style="padding:8px 16px;border-radius:7px;border:none;background:#ea4335;color:#fff;font-family:var(--mono);font-size:10px;cursor:pointer;font-weight:500;">Connect</button>
+          <button onclick="sGoogleOAuth()" style="padding:8px 16px;border-radius:7px;border:none;background:#ea4335;color:#fff;font-family:var(--mono);font-size:10px;cursor:pointer;font-weight:500;">Authorize with Google</button>
           <button onclick="sDisconnect('gmail')" style="padding:8px 12px;border-radius:7px;border:1px solid var(--border);background:transparent;color:var(--text3);font-family:var(--mono);font-size:10px;cursor:pointer;">Disconnect</button>
         </div>
       </div>
@@ -1406,6 +1402,12 @@ function sMicrosoftOAuth() {
   const token = API.auth._token;
   if (!token) { showToast("Please log in first"); return; }
   window.location.href = `/api/auth/microsoft?token=${encodeURIComponent(token)}`;
+}
+
+function sGoogleOAuth() {
+  const token = API.auth._token;
+  if (!token) { showToast("Please log in first"); return; }
+  window.location.href = `/api/auth/google?token=${encodeURIComponent(token)}`;
 }
 
 async function sConnect(src) {
@@ -2272,9 +2274,19 @@ async function init() {
     ['teams','outlook'].forEach(src => { STATE.connected[src]=true; STATE.activeSources.add(src); updateSettingsStatus(src,true); });
     window.history.replaceState({}, '', '/app');
   }
+  if (qp.get('connected') === 'google') {
+    showToast("Gmail & Google Calendar connected ✓");
+    STATE.connected.gmail=true; STATE.activeSources.add('gmail'); updateSettingsStatus('gmail',true);
+    window.history.replaceState({}, '', '/app');
+  }
   const msErr = qp.get('error');
   if (msErr) {
-    const msgs = { ms_denied:'Microsoft authorization cancelled', ms_token_failed:'Microsoft token exchange failed — check Azure app config', ms_expired:'Authorization expired — please try again', ms_invalid_state:'Invalid OAuth state — please try again' };
+    const msgs = {
+      ms_denied:'Microsoft authorization cancelled', ms_token_failed:'Microsoft token exchange failed — check Azure app config',
+      ms_expired:'Authorization expired — please try again', ms_invalid_state:'Invalid OAuth state — please try again',
+      google_denied:'Google authorization cancelled', google_token_failed:'Google token exchange failed — check Google Cloud config',
+      google_expired:'Authorization expired — please try again', google_invalid_state:'Invalid OAuth state — please try again',
+    };
     showToast(msgs[msErr] || `Connection error: ${msErr}`);
     window.history.replaceState({}, '', '/app');
   }
