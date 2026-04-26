@@ -1,69 +1,67 @@
+// api/ai/report.js  [nodejs runtime]
 import Anthropic from '@anthropic-ai/sdk';
-import { supabaseAdmin } from '../../lib/supabase.js';
-import { json, error, withAuth, decryptToken } from '../../lib/middleware.js';
+import { verifyJWT } from '../_lib/auth.js';
+import { createSupabaseClient } from '../_lib/supabase.js';
+import { SYSTEM_PROMPT } from '../_lib/systemPrompt.js';
+import { buildReportPrompt } from '../_lib/reportPrompt.js';
 
-export const config = { runtime: 'nodejs' };
+export const config = { maxDuration: 60 };
 
-export default withAuth(async (req, { user }) => {
-  if (req.method !== 'POST') return error('Method not allowed', 405);
+export default async function handler(req, res) {
+  if (req.method === 'OPTIONS') return res.status(200).end();
+  if (req.method !== 'POST') return res.status(405).end();
+  const user = await verifyJWT(req).catch(() => null);
+  if (!user) return res.status(401).json({ error: 'Unauthorized' });
 
-  const today = new Date().toISOString().split('T')[0];
+  const supabase = createSupabaseClient();
+  const since24h    = new Date(Date.now() - 24 * 3600 * 1000).toISOString();
+  const todayStr    = new Date().toISOString().substring(0, 10);
+  const tomorrowStr = new Date(Date.now() + 86400000).toISOString().substring(0, 10);
 
-  const [msgsResult, profileResult, settingsResult] = await Promise.all([
-    supabaseAdmin.from('messages').select('source,type,sender,subject,category,priority,channel,received_at')
-      .eq('user_id', user.id).gte('received_at', today + 'T00:00:00Z').order('priority', { ascending: false }),
-    supabaseAdmin.from('profiles').select('*').eq('id', user.id).single(),
-    supabaseAdmin.from('user_settings').select('claude_key_encrypted').eq('user_id', user.id).single(),
+  const [{ data: messages }, { data: meetings }, { data: settings }] = await Promise.all([
+    supabase
+      .from('messages')
+      .select('id,subject,from_name,sender,source,ai_priority,ai_category,ai_summary,ai_action,phishing_flags,draft_reply,received_at,category,priority')
+      .eq('user_id', user.userId)
+      .gte('received_at', since24h)
+      .order('received_at', { ascending: false })
+      .limit(60),
+    supabase
+      .from('meetings')
+      .select('id,title,date,time,duration,platform,attendees,organizer,ai_brief,ai_summary')
+      .eq('user_id', user.userId)
+      .gte('date', todayStr)
+      .lte('date', tomorrowStr),
+    supabase.from('user_settings').select('*').eq('user_id', user.userId).single(),
   ]);
 
-  const messages = msgsResult.data || [];
-  const profile  = profileResult.data || {};
-  const apiKey   = settingsResult.data?.claude_key_encrypted
-    ? await decryptToken(settingsResult.data.claude_key_encrypted)
-    : process.env.ANTHROPIC_API_KEY;
+  const actionItems = (messages || []).filter(m => m.category === 'action' || m.ai_category === 'action_required');
 
-  if (!apiKey) return error('No Claude API key configured', 400);
-
-  const client = new Anthropic({ apiKey });
-  const model  = profile.model || 'claude-sonnet-4-20250514';
-
-  const summary = messages.map(m =>
-    `[${m.source.toUpperCase()} ${m.type}${m.channel ? ' in ' + m.channel : ''}] From: ${m.sender} | "${m.subject}" | Priority: ${m.priority}% | Category: ${m.category}`
-  ).join('\n');
-
-  const dateStr  = new Date().toLocaleDateString('en-US', { weekday:'long', month:'long', day:'numeric' });
-  const userName = [profile.first_name, profile.last_name].filter(Boolean).join(' ') || 'the user';
-
-  const stats = {
-    total:    messages.length,
-    action:   messages.filter(m => m.category === 'action').length,
-    meetings: messages.filter(m => m.category === 'meeting').length,
-    noise:    messages.filter(m => m.category === 'noise').length,
-    sources:  [...new Set(messages.map(m => m.source))],
+  const ctx = {
+    user_name:    `${settings?.first_name || ''} ${settings?.last_name || ''}`.trim() || 'User',
+    user_role:    settings?.role    || 'standard',
+    user_company: settings?.company || '',
+    inbox_count:  2,
   };
 
-  const prompt = `Generate a daily communication intelligence briefing for ${userName} on ${dateStr}.
+  const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
+  const prompt = buildReportPrompt(
+    { messages: messages || [], meetings: meetings || [], action_items: actionItems },
+    ctx
+  );
 
-Today's messages (${messages.length} total across ${stats.sources.join(', ')}):
-${summary || 'No messages today.'}
+  let report;
+  try {
+    const response = await client.messages.create({
+      model:      'claude-sonnet-4-20250514',
+      max_tokens: 2000,
+      system:     SYSTEM_PROMPT,
+      messages:   [{ role: 'user', content: prompt }],
+    });
+    report = response.content[0]?.text || '';
+  } catch (err) {
+    return res.status(500).json({ error: err.message });
+  }
 
-Stats: ${stats.action} action required, ${stats.meetings} meetings, ${stats.noise} noise filtered.
-
-Write a 4-5 sentence executive briefing covering:
-1. Overall communication load and tone for the day
-2. Top 2-3 items requiring immediate attention (name them specifically)
-3. Any notable patterns or themes across platforms
-4. Estimated time saved by AI filtering
-5. One specific recommendation for tackling today's inbox
-
-Confident, direct prose. No bullet points. No markdown. Address ${profile.first_name || 'the user'} by name if available.`;
-
-  const message = await client.messages.create({
-    model, max_tokens: 600,
-    system: 'You are an AI chief of staff generating daily cross-platform communication intelligence reports. Specific, data-driven, direct. Flowing professional prose. No markdown.',
-    messages: [{ role: 'user', content: prompt }]
-  });
-
-  return json({ report: message.content[0].text, stats, date: dateStr });
-});
-
+  return res.status(200).json({ ok: true, report });
+}

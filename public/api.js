@@ -144,18 +144,33 @@ const API = (() => {
       return req('POST', '/ai/analyze', { message_id: messageId, type });
     },
     async draft(messageId) {
-      return req('POST', '/ai/draft', { message_id: messageId });
+      return req('POST', '/messages/draft', { message_id: messageId });
     },
     async report() {
       return req('POST', '/ai/report', {});
     },
-    async meetingPrep(meetingId) {
-      return req('POST', '/ai/meeting-prep', { meeting_id: meetingId });
+    async meetingPrep(meetingId, action = 'pre_brief') {
+      return req('POST', '/meetings/brief', { meeting_id: meetingId, action });
+    },
+    async triage() {
+      return req('POST', '/messages/triage', {});
+    },
+    async security() {
+      return req('POST', '/ai/security', {});
+    },
+    async intro(contact_a, contact_b, context_notes = '') {
+      return req('POST', '/ai/intro', { contact_a, contact_b, context_notes });
     },
   };
 
+  // ── Sync ────────────────────────────────────────────────────
+  const sync = {
+    async microsoft() { return req('POST', '/sync/microsoft', {}); },
+    async google()    { return req('POST', '/sync/google', {}); },
+    async status()    { return req('GET',  '/sync/status'); },
+  };
+
   // ── Realtime subscription helper ───────────────────────────
-  // Call this after login to get live message updates via Supabase Realtime
   function subscribeToMessages(onNew) {
     if (!window.supabase) return null;
     return window.supabase
@@ -168,7 +183,7 @@ const API = (() => {
       .subscribe();
   }
 
-  return { auth, profile, connectors, messages, meetings, ai, subscribeToMessages };
+  return { auth, profile, connectors, messages, meetings, ai, sync, subscribeToMessages };
 })();
 
 // ── Supabase Realtime client (optional, for live updates) ─────

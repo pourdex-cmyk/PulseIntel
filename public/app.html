@@ -1401,13 +1401,13 @@ async function sSaveClaude() {
 function sMicrosoftOAuth() {
   const token = API.auth._token;
   if (!token) { showToast("Please log in first"); return; }
-  window.location.href = `/api/auth/microsoft?token=${encodeURIComponent(token)}`;
+  window.location.href = `/api/oauth/microsoft/initiate?token=${encodeURIComponent(token)}`;
 }
 
 function sGoogleOAuth() {
   const token = API.auth._token;
   if (!token) { showToast("Please log in first"); return; }
-  window.location.href = `/api/auth/google?token=${encodeURIComponent(token)}`;
+  window.location.href = `/api/oauth/google/initiate?token=${encodeURIComponent(token)}`;
 }
 
 async function sConnect(src) {
