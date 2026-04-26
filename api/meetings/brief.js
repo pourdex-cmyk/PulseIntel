@@ -5,6 +5,8 @@ import { createSupabaseClient } from '../_lib/supabase.js';
 import { SYSTEM_PROMPT } from '../_lib/systemPrompt.js';
 import { buildMeetingPrompt } from '../_lib/meetingPrompts.js';
 
+export const config = { maxDuration: 45 };
+
 export default async function handler(req, res) {
   if (req.method === 'OPTIONS') return res.status(200).end();
   if (req.method !== 'POST') return res.status(405).end();
@@ -24,7 +26,7 @@ export default async function handler(req, res) {
 
   const ctx = {
     user_name:    `${settings?.first_name || ''} ${settings?.last_name || ''}`.trim() || 'User',
-    user_role:    settings?.role    || 'standard',
+    user_role:    settings?.role    || 'professional',
     user_company: settings?.company || '',
   };
 
@@ -41,28 +43,63 @@ export default async function handler(req, res) {
     transcript: meeting.transcript,
   };
 
-  const client   = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
-  const prompt   = buildMeetingPrompt(action, meetingData, ctx);
+  const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
+  const prompt = buildMeetingPrompt(action, meetingData, ctx);
 
-  let result;
+  // deck_outline returns JSON — don't stream, return directly
+  if (action === 'deck_outline') {
+    let result;
+    try {
+      const response = await client.messages.create({
+        model:      'claude-sonnet-4-6',
+        max_tokens: 3000,
+        system:     SYSTEM_PROMPT,
+        messages:   [{ role: 'user', content: prompt }],
+      });
+      result = response.content[0]?.text || '';
+    } catch (err) {
+      return res.status(500).json({ error: err.message });
+    }
+    await supabase.from('meetings')
+      .update({ ai_deck: result })
+      .eq('id', meeting_id)
+      .eq('user_id', user.userId);
+    return res.status(200).json({ ok: true, result, action });
+  }
+
+  // pre_brief and post_summary — stream the markdown response
+  res.setHeader('Content-Type', 'text/event-stream; charset=utf-8');
+  res.setHeader('Cache-Control', 'no-cache, no-transform');
+  res.setHeader('X-Accel-Buffering', 'no');
+  res.flushHeaders();
+
+  let fullText = '';
   try {
-    const response = await client.messages.create({
-      model:      'claude-sonnet-4-20250514',
+    const stream = client.messages.stream({
+      model:      'claude-opus-4-7',
       max_tokens: 2048,
       system:     SYSTEM_PROMPT,
       messages:   [{ role: 'user', content: prompt }],
     });
-    result = response.content[0]?.text || '';
+
+    for await (const event of stream) {
+      if (event.type === 'content_block_delta' && event.delta.type === 'text_delta') {
+        fullText += event.delta.text;
+        res.write(`data: ${JSON.stringify({ t: event.delta.text })}\n\n`);
+      }
+    }
   } catch (err) {
-    return res.status(500).json({ error: err.message });
+    res.write(`data: ${JSON.stringify({ error: err.message })}\n\n`);
+    res.end();
+    return;
   }
 
-  // Save result to meeting record
-  const updateField = action === 'deck_outline' ? 'ai_deck'
-    : action === 'post_summary' ? 'ai_summary'
-    : 'ai_brief';
+  const updateField = action === 'post_summary' ? 'ai_summary' : 'ai_brief';
+  await supabase.from('meetings')
+    .update({ [updateField]: fullText })
+    .eq('id', meeting_id)
+    .eq('user_id', user.userId);
 
-  await supabase.from('meetings').update({ [updateField]: result }).eq('id', meeting_id);
-
-  return res.status(200).json({ ok: true, result, action });
+  res.write(`data: ${JSON.stringify({ done: true, action })}\n\n`);
+  res.end();
 }

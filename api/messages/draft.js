@@ -5,6 +5,8 @@ import { createSupabaseClient } from '../_lib/supabase.js';
 import { SYSTEM_PROMPT } from '../_lib/systemPrompt.js';
 import { buildEmailPrompt } from '../_lib/emailPrompts.js';
 
+export const config = { maxDuration: 30 };
+
 export default async function handler(req, res) {
   if (req.method === 'OPTIONS') return res.status(200).end();
   if (req.method !== 'POST') return res.status(405).end();
@@ -24,9 +26,9 @@ export default async function handler(req, res) {
 
   const ctx = {
     user_name:   `${settings?.first_name || ''} ${settings?.last_name || ''}`.trim() || 'User',
-    user_role:   settings?.role  || 'standard',
-    reply_style: settings?.tone  || 'professional',
-    signoff:     settings?.signoff || '',
+    user_role:   settings?.role    || 'professional',
+    reply_style: settings?.tone    || 'professional',
+    signoff:     settings?.signoff || settings?.first_name || 'Best',
   };
 
   const msgPayload = [{
@@ -38,24 +40,42 @@ export default async function handler(req, res) {
     source:       msg.source,
   }];
 
-  const client   = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
-  const prompt   = buildEmailPrompt('draft_reply', msgPayload, ctx);
+  const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
+  const prompt = buildEmailPrompt('draft_reply', msgPayload, ctx);
 
-  let draft;
+  // Stream the response
+  res.setHeader('Content-Type', 'text/event-stream; charset=utf-8');
+  res.setHeader('Cache-Control', 'no-cache, no-transform');
+  res.setHeader('X-Accel-Buffering', 'no');
+  res.flushHeaders();
+
+  let fullText = '';
   try {
-    const response = await client.messages.create({
-      model:      'claude-sonnet-4-20250514',
+    const stream = client.messages.stream({
+      model:      'claude-sonnet-4-6',
       max_tokens: 1024,
       system:     SYSTEM_PROMPT,
       messages:   [{ role: 'user', content: prompt }],
     });
-    draft = response.content[0]?.text || '';
+
+    for await (const event of stream) {
+      if (event.type === 'content_block_delta' && event.delta.type === 'text_delta') {
+        fullText += event.delta.text;
+        res.write(`data: ${JSON.stringify({ t: event.delta.text })}\n\n`);
+      }
+    }
   } catch (err) {
-    return res.status(500).json({ error: err.message });
+    res.write(`data: ${JSON.stringify({ error: err.message })}\n\n`);
+    res.end();
+    return;
   }
 
   // Save draft to message record
-  await supabase.from('messages').update({ draft_reply: draft }).eq('id', message_id);
+  await supabase.from('messages')
+    .update({ draft_reply: fullText })
+    .eq('id', message_id)
+    .eq('user_id', user.userId);
 
-  return res.status(200).json({ ok: true, draft });
+  res.write(`data: ${JSON.stringify({ done: true })}\n\n`);
+  res.end();
 }

@@ -32,7 +32,7 @@ export default async function handler(req, res) {
   let email;
   try {
     const response = await client.messages.create({
-      model:      'claude-sonnet-4-20250514',
+      model:      'claude-sonnet-4-6',
       max_tokens: 600,
       system:     SYSTEM_PROMPT,
       messages:   [{ role: 'user', content: prompt }],

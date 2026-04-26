@@ -39,7 +39,7 @@ export default async function handler(req, res) {
 
   const ctx = {
     user_name:    `${settings?.first_name || ''} ${settings?.last_name || ''}`.trim() || 'User',
-    user_role:    settings?.role    || 'standard',
+    user_role:    settings?.role    || 'professional',
     user_company: settings?.company || '',
     inbox_count:  2,
   };
@@ -50,18 +50,31 @@ export default async function handler(req, res) {
     ctx
   );
 
-  let report;
+  // Stream the response
+  res.setHeader('Content-Type', 'text/event-stream; charset=utf-8');
+  res.setHeader('Cache-Control', 'no-cache, no-transform');
+  res.setHeader('X-Accel-Buffering', 'no');
+  res.flushHeaders();
+
   try {
-    const response = await client.messages.create({
-      model:      'claude-sonnet-4-20250514',
+    const stream = client.messages.stream({
+      model:      'claude-opus-4-7',
       max_tokens: 2000,
       system:     SYSTEM_PROMPT,
       messages:   [{ role: 'user', content: prompt }],
     });
-    report = response.content[0]?.text || '';
+
+    for await (const event of stream) {
+      if (event.type === 'content_block_delta' && event.delta.type === 'text_delta') {
+        res.write(`data: ${JSON.stringify({ t: event.delta.text })}\n\n`);
+      }
+    }
   } catch (err) {
-    return res.status(500).json({ error: err.message });
+    res.write(`data: ${JSON.stringify({ error: err.message })}\n\n`);
+    res.end();
+    return;
   }
 
-  return res.status(200).json({ ok: true, report });
+  res.write(`data: ${JSON.stringify({ done: true })}\n\n`);
+  res.end();
 }

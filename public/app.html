@@ -450,6 +450,7 @@ html,body{height:100%;font-family:var(--sans);background:var(--bg);color:var(--t
 .ai-dot:nth-child(2){animation-delay:0.2s;}
 .ai-dot:nth-child(3){animation-delay:0.4s;}
 @keyframes pulse{0%,100%{opacity:0.2}50%{opacity:1}}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:0}}
 .ai-loading-row{display:flex;align-items:center;gap:8px;font-size:11px;color:var(--text3);}
 .prio-row{display:flex;align-items:center;gap:8px;margin-top:7px;}
 .prio-label{font-family:var(--mono);font-size:9px;color:var(--text3);width:44px;}
@@ -1600,6 +1601,61 @@ function openItem(m) {
 }
 
 // ══════════════════════════════════════════════════════════════
+// ══════════════════════════════════════════════════════════════
+// STREAMING AI HELPER
+// ══════════════════════════════════════════════════════════════
+async function _streamAI(endpoint, body, onChunk, onDone) {
+  const token = API.auth._token;
+  if (!token) throw new Error('Not authenticated');
+  const res = await fetch(endpoint, {
+    method:  'POST',
+    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+    body:    JSON.stringify(body),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({ error: 'Request failed' }));
+    throw new Error(err.error || `HTTP ${res.status}`);
+  }
+  const reader  = res.body.getReader();
+  const decoder = new TextDecoder();
+  let buf = '';
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    buf += decoder.decode(value, { stream: true });
+    const lines = buf.split('\n');
+    buf = lines.pop() || '';
+    for (const line of lines) {
+      if (!line.startsWith('data: ')) continue;
+      try {
+        const d = JSON.parse(line.slice(6));
+        if (d.error) throw new Error(d.error);
+        if (d.t)    onChunk(d.t);
+        if (d.done) { onDone?.(); return; }
+      } catch(e) { if (e.message !== 'Unexpected end of JSON input') throw e; }
+    }
+  }
+  onDone?.();
+}
+
+// Minimal markdown → HTML renderer for AI output panels
+function _renderMarkdown(text) {
+  if (!text) return '';
+  let h = text.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  h = h.replace(/^## (.+)$/gm, '<div style="font-family:var(--serif);font-size:16px;font-weight:500;color:var(--text);margin:16px 0 6px;letter-spacing:-0.01em;">$1</div>');
+  h = h.replace(/^### (.+)$/gm, '<div style="font-family:var(--mono);font-size:9px;letter-spacing:0.12em;text-transform:uppercase;color:var(--text3);margin:14px 0 5px;padding-bottom:5px;border-bottom:1px solid var(--border2);">$1</div>');
+  h = h.replace(/\*\*(.+?)\*\*/g, '<strong style="color:var(--text);font-weight:500;">$1</strong>');
+  h = h.replace(/^- \[ \] (.+)$/gm, '<div style="display:flex;gap:7px;align-items:flex-start;margin:3px 0;"><span style="flex-shrink:0;width:12px;height:12px;border:1px solid var(--border);border-radius:2px;margin-top:2px;"></span><span>$1</span></div>');
+  h = h.replace(/^- \[x\] (.+)$/gm, '<div style="display:flex;gap:7px;align-items:flex-start;margin:3px 0;color:var(--text3);"><span style="flex-shrink:0;width:12px;height:12px;border:1px solid var(--green);background:var(--green);border-radius:2px;margin-top:2px;"></span><span style="text-decoration:line-through;">$1</span></div>');
+  h = h.replace(/^- (.+)$/gm, '<div style="margin:3px 0;padding-left:14px;position:relative;"><span style="position:absolute;left:0;color:var(--accent);">·</span>$1</div>');
+  h = h.replace(/^\d+\. (.+)$/gm, '<div style="margin:3px 0;padding-left:18px;position:relative;"><span style="position:absolute;left:0;font-family:var(--mono);font-size:10px;color:var(--text3);">·</span>$1</div>');
+  h = h.replace(/\[SECURITY RISK\]/g, '<span style="background:rgba(232,93,47,0.15);color:var(--accent);font-family:var(--mono);font-size:9px;padding:1px 6px;border-radius:4px;letter-spacing:0.06em;">SECURITY RISK</span>');
+  h = h.replace(/⚠ (.+)/g, '<div style="color:var(--amber);font-size:11px;font-style:italic;">⚠ $1</div>');
+  h = h.replace(/\n\n/g, '<div style="height:6px;"></div>').replace(/\n/g, '<br>');
+  return h;
+}
+
+// ══════════════════════════════════════════════════════════════
 // CLAUDE API
 // ══════════════════════════════════════════════════════════════
 async function callClaude(userPrompt, systemPrompt) {
@@ -1691,16 +1747,17 @@ async function doDraft() {
   if (!item) return;
   const panel = document.getElementById("draft-panel");
   const ta    = document.getElementById("draft-ta");
-  panel.style.display="block"; ta.value=""; ta.placeholder="Generating...";
-  // Production: use /api/ai/draft
-  if (isProduction() && STATE.claudeKey === "server") {
+  panel.style.display="block"; ta.value=""; ta.placeholder="";
+  if (isProduction()) {
+    const cursor = document.createElement('span');
+    cursor.style.cssText = 'display:inline-block;width:2px;height:13px;background:var(--accent);animation:blink 1s step-end infinite;vertical-align:text-bottom;margin-left:1px;';
     try {
-      const data = await API.ai.draft(item.id);
-      ta.placeholder = "";
-      if (data?.draft) { ta.value=data.draft.trim(); _resizeTa(ta); showToast("Draft ready ✓"); }
-      else ta.placeholder = "Generation failed — try again";
-      return;
-    } catch(e) { ta.placeholder=""; }
+      await _streamAI('/api/messages/draft', { message_id: item.id },
+        chunk => { ta.value += chunk; _resizeTa(ta); ta.scrollTop = ta.scrollHeight; },
+        () => showToast('Draft ready — review before sending')
+      );
+    } catch(e) { ta.placeholder = "Generation failed — try again"; }
+    return;
   }
   // Direct / demo: build prompt from profile
   const fn        = getProfile("firstname");
@@ -1768,14 +1825,27 @@ async function genReport() {
   const block = document.getElementById("insight-block");
   const txt   = document.getElementById("insight-text");
   block.querySelector(".insight-label-r").innerHTML=`<div class="ai-dots"><div class="ai-dot"></div><div class="ai-dot"></div><div class="ai-dot"></div></div> Generating...`;
-  txt.style.color="var(--text3)"; txt.textContent="Analyzing all sources...";
-  if (isProduction() && STATE.claudeKey==="server") {
+  txt.style.color="var(--text3)"; txt.textContent="";
+  if (isProduction()) {
+    let reportBuf = '';
     try {
-      const data = await API.ai.report();
-      block.querySelector(".insight-label-r").textContent="AI Daily Brief";
-      txt.style.color="var(--text2)"; txt.textContent=data.report||"Report unavailable.";
-      return;
-    } catch(e) {}
+      await _streamAI('/api/ai/report', {},
+        chunk => {
+          reportBuf += chunk;
+          txt.style.color = "var(--text2)";
+          txt.textContent = reportBuf; // plain text while streaming (fast)
+        },
+        () => {
+          txt.innerHTML = _renderMarkdown(reportBuf); // render markdown when done
+          block.querySelector(".insight-label-r").textContent = "AI Daily Brief";
+        }
+      );
+    } catch(e) {
+      txt.style.color = "var(--text3)";
+      txt.textContent = "Report unavailable — " + (e.message || "try again");
+      block.querySelector(".insight-label-r").textContent = "AI Daily Brief";
+    }
+    return;
   }
   const today  = new Date().toLocaleDateString("en-US",{weekday:"long",month:"long",day:"numeric"});
   const summary= MESSAGES.map(m=>`[${SOURCE_CONFIG[m.source].label}] From: ${m.sender} | "${m.subject}" | Priority: ${m.priority}% | ${m.category}`).join("\n");
@@ -2113,15 +2183,26 @@ function openRelMessage(msgId) {
 async function genMeetingPrep(mid) {
   const btn=document.querySelector(`#meet-detail-content .meet-ai-btn`);
   if (btn) { btn.style.opacity="0.5"; btn.style.pointerEvents="none"; }
-  if (isProduction() && STATE.claudeKey==="server") {
+  if (isProduction()) {
+    const out = document.getElementById(`ai-prep-${mid}`);
+    if (out) { out.style.display="block"; out.textContent=""; }
+    let briefBuf = '';
     try {
-      const data=await API.ai.meetingPrep(mid);
-      const out=document.getElementById(`ai-prep-${mid}`);
-      if (out) { out.style.display="block"; out.textContent=data.prep||"Briefing unavailable."; }
-      _saveMeetingField(mid, m=>{ m.aiPrep=data.prep||""; });
-      if (btn) { btn.style.opacity="1"; btn.style.pointerEvents="auto"; }
-      return;
-    } catch(e) {}
+      await _streamAI('/api/meetings/brief', { meeting_id: mid, action: 'pre_brief' },
+        chunk => {
+          briefBuf += chunk;
+          if (out) out.textContent = briefBuf;
+        },
+        () => {
+          if (out) out.innerHTML = _renderMarkdown(briefBuf);
+          _saveMeetingField(mid, m => { m.aiPrep = briefBuf; });
+        }
+      );
+    } catch(e) {
+      if (out) out.textContent = "Briefing unavailable — " + (e.message || "try again");
+    }
+    if (btn) { btn.style.opacity="1"; btn.style.pointerEvents="auto"; }
+    return;
   }
   // Direct / demo fallback
   const all=getMeetings(), m=all.find(x=>x.id===mid);

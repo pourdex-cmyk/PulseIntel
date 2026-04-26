@@ -1,20 +1,31 @@
 // api/oauth/google/callback.js  [EDGE RUNTIME — do not change runtime]
 export const config = { runtime: 'edge' };
 
+import { jwtVerify } from 'jose';
 import { encrypt } from '../../_lib/crypto.js';
 import { createSupabaseClient } from '../../_lib/supabase.js';
 
 export default async function handler(req) {
   const base = process.env.APP_BASE_URL || 'https://acgpulseintel.com';
   try {
-    const url    = new URL(req.url, base);
-    const code   = url.searchParams.get('code');
-    const userId = url.searchParams.get('state');
-    const error  = url.searchParams.get('error');
+    const url        = new URL(req.url, base);
+    const code       = url.searchParams.get('code');
+    const stateToken = url.searchParams.get('state');
+    const error      = url.searchParams.get('error');
+
+    // Verify signed state to prevent CSRF
+    let userId;
+    try {
+      const secret = new TextEncoder().encode(process.env.JWT_SECRET);
+      const { payload } = await jwtVerify(stateToken, secret);
+      userId = payload.uid;
+    } catch {
+      return Response.redirect(`${base}/app?error=google_invalid_state`, 302);
+    }
 
     if (error || !code || !userId) {
       console.error('[google/callback] OAuth denied or missing params:', error);
-      return Response.redirect(`${base}/app?error=oauth_denied`, 302);
+      return Response.redirect(`${base}/app?error=google_denied`, 302);
     }
 
     const tokenRes = await fetch('https://oauth2.googleapis.com/token', {
