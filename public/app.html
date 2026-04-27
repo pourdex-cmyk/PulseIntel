@@ -16,7 +16,7 @@
   --border2: rgba(255,255,255,0.04);
   --text: #e8e9ef;
   --text2: #9395a0;
-  --text3: #5a5d6b;
+  --text3: #7e8195;
   --accent: #e85d2f;
   --accent-soft: rgba(232,93,47,0.15);
   --blue: #3b82f6;
@@ -385,6 +385,18 @@ html,body{height:100%;font-family:var(--sans);background:var(--bg);color:var(--t
 .tag-meeting{background:rgba(34,197,94,0.1);color:var(--green);}
 .tag-fyi{background:var(--surface);color:var(--text3);}
 .tag-noise{background:rgba(255,255,255,0.04);color:var(--text3);}
+/* Noise row dimming */
+.feed-item.noise-row{opacity:0.42;}
+.feed-item.noise-row:hover{opacity:0.72;}
+/* Skeleton loader */
+@keyframes shimmer{0%{background-position:-200% 0}100%{background-position:200% 0}}
+.feed-skel{padding:12px 16px;border-bottom:1px solid var(--border2);}
+.feed-skel-row{display:flex;justify-content:space-between;margin-bottom:7px;}
+.feed-skel-line{height:8px;border-radius:4px;background:linear-gradient(90deg,var(--surface) 25%,var(--surface2) 50%,var(--surface) 75%);background-size:200% 100%;animation:shimmer 1.5s infinite;}
+.feed-skel-line.w60{width:60%;}
+.feed-skel-line.w30{width:30%;}
+.feed-skel-line.w80{width:80%;}
+.feed-skel-line.w45{width:45%;}
 .tag-channel{background:rgba(168,85,247,0.1);color:var(--purple);}
 
 /* Unread dot */
@@ -454,7 +466,7 @@ html,body{height:100%;font-family:var(--sans);background:var(--bg);color:var(--t
 .ai-loading-row{display:flex;align-items:center;gap:8px;font-size:11px;color:var(--text3);}
 .prio-row{display:flex;align-items:center;gap:8px;margin-top:7px;}
 .prio-label{font-family:var(--mono);font-size:9px;color:var(--text3);width:44px;}
-.prio-track{flex:1;height:2px;background:var(--surface);border-radius:1px;overflow:hidden;}
+.prio-track{flex:1;height:4px;background:var(--surface2);border-radius:2px;overflow:hidden;}
 .prio-fill{height:100%;border-radius:1px;transition:width 0.5s ease;}
 .prio-val{font-family:var(--mono);font-size:9px;color:var(--text3);width:26px;text-align:right;}
 
@@ -627,7 +639,7 @@ html,body{height:100%;font-family:var(--sans);background:var(--bg);color:var(--t
         <div class="api-dot-top" id="api-dot-top"></div>
         <span id="api-status-top" style="font-family:var(--mono);font-size:9px;letter-spacing:0.06em;">Claude ready</span>
       </div>
-      <div id="user-avatar" onclick="setView('settings',document.getElementById('nav-settings'))" style="width:26px;height:26px;border-radius:50%;background:var(--surface2);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;cursor:pointer;font-family:var(--mono);font-size:9px;color:var(--text2);letter-spacing:0.04em;transition:border-color 0.15s;flex-shrink:0;" title="Profile & Settings">?</div>
+      <div id="user-avatar" onclick="setView('settings',document.getElementById('nav-settings'))" aria-label="Profile and Settings" role="button" tabindex="0" style="width:26px;height:26px;border-radius:50%;background:var(--surface2);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;cursor:pointer;font-family:var(--mono);font-size:9px;color:var(--text2);letter-spacing:0.04em;transition:border-color 0.15s;flex-shrink:0;" title="Profile & Settings">?</div>
       <button class="settings-btn" onclick="setView('settings',null)">⚙ Settings</button>
     </div>
   </div>
@@ -748,9 +760,12 @@ html,body{height:100%;font-family:var(--sans);background:var(--bg);color:var(--t
           <div class="msg-body" id="msg-body"></div>
         </div>
         <div class="draft-panel" id="draft-panel">
-          <div class="draft-header">
-            <div class="ai-orb"><svg viewBox="0 0 9 9" fill="#fff"><path d="M1 8l1.5-4L7 1 5.5 5z"/></svg></div>
-            <span class="draft-label">AI Draft — Review before sending</span>
+          <div class="draft-header" style="justify-content:space-between;">
+            <div style="display:flex;align-items:center;gap:7px;">
+              <div class="ai-orb"><svg viewBox="0 0 9 9" fill="#fff"><path d="M1 8l1.5-4L7 1 5.5 5z"/></svg></div>
+              <span class="draft-label">AI Draft — Review before sending</span>
+            </div>
+            <button aria-label="Close draft" onclick="document.getElementById('draft-panel').style.display='none'" style="background:none;border:none;color:var(--text3);cursor:pointer;font-size:18px;line-height:1;padding:0 2px;transition:color 0.12s;" onmouseover="this.style.color='var(--text2)'" onmouseout="this.style.color='var(--text3)'">×</button>
           </div>
           <textarea class="draft-ta" id="draft-ta" placeholder="Generating..."></textarea>
           <div class="draft-footer">
@@ -781,11 +796,11 @@ html,body{height:100%;font-family:var(--sans);background:var(--bg);color:var(--t
       </div>
 
       <div class="stats-grid">
-        <div class="stat-card"><div class="stat-num" id="rs-total">31</div><div class="stat-lbl">Total messages</div><div class="stat-delta" style="color:var(--amber);">↑ 4 vs yesterday</div></div>
-        <div class="stat-card"><div class="stat-num" id="rs-action">5</div><div class="stat-lbl">Action needed</div><div class="stat-delta" style="color:var(--green);">↓ 2 vs yesterday</div></div>
-        <div class="stat-card"><div class="stat-num" id="rs-filtered">9</div><div class="stat-lbl">AI filtered noise</div><div class="stat-delta" style="color:var(--text3);">29% of total</div></div>
-        <div class="stat-card"><div class="stat-num" id="rs-channels">6</div><div class="stat-lbl">Active channels</div><div class="stat-delta" style="color:var(--text3);">Teams + Slack</div></div>
-        <div class="stat-card"><div class="stat-num" id="rs-drafts">4</div><div class="stat-lbl">Drafts generated</div><div class="stat-delta" style="color:var(--green);">Avg 9s each</div></div>
+        <div class="stat-card"><div class="stat-num" id="rs-total">—</div><div class="stat-lbl">Total messages</div><div class="stat-delta" id="rs-total-delta" style="color:var(--text3);">Loading...</div></div>
+        <div class="stat-card"><div class="stat-num" id="rs-action">—</div><div class="stat-lbl">Action needed</div><div class="stat-delta" id="rs-action-delta" style="color:var(--text3);">—</div></div>
+        <div class="stat-card"><div class="stat-num" id="rs-filtered">—</div><div class="stat-lbl">AI filtered noise</div><div class="stat-delta" id="rs-noise-pct" style="color:var(--text3);">—</div></div>
+        <div class="stat-card"><div class="stat-num" id="rs-channels">—</div><div class="stat-lbl">Active sources</div><div class="stat-delta" id="rs-channels-delta" style="color:var(--text3);">—</div></div>
+        <div class="stat-card"><div class="stat-num" id="rs-unread">—</div><div class="stat-lbl">Unread messages</div><div class="stat-delta" id="rs-unread-delta" style="color:var(--text3);">—</div></div>
       </div>
 
       <div class="source-breakdown">
@@ -794,48 +809,42 @@ html,body{height:100%;font-family:var(--sans);background:var(--bg);color:var(--t
             <div class="src-icon" style="background:rgba(98,100,167,0.2);">💬</div>
             <span class="src-name">Teams</span>
           </div>
-          <div class="src-count">5</div>
+          <div class="src-count" id="src-cnt-teams">—</div>
           <div class="src-label">messages today</div>
-          <div class="src-bar"><div class="src-bar-fill" style="width:55%;background:var(--teams);"></div></div>
+          <div class="src-bar"><div class="src-bar-fill" id="src-bar-teams" style="width:0%;background:var(--teams);"></div></div>
         </div>
         <div class="src-card">
           <div class="src-card-top">
             <div class="src-icon" style="background:rgba(168,85,247,0.15);">⚡</div>
             <span class="src-name">Slack</span>
           </div>
-          <div class="src-count">8</div>
+          <div class="src-count" id="src-cnt-slack">—</div>
           <div class="src-label">messages today</div>
-          <div class="src-bar"><div class="src-bar-fill" style="width:80%;background:var(--purple);"></div></div>
+          <div class="src-bar"><div class="src-bar-fill" id="src-bar-slack" style="width:0%;background:var(--purple);"></div></div>
         </div>
         <div class="src-card">
           <div class="src-card-top">
             <div class="src-icon" style="background:rgba(0,114,198,0.2);">📧</div>
             <span class="src-name">Outlook</span>
           </div>
-          <div class="src-count">11</div>
+          <div class="src-count" id="src-cnt-outlook">—</div>
           <div class="src-label">emails today</div>
-          <div class="src-bar"><div class="src-bar-fill" style="width:100%;background:var(--outlook);"></div></div>
+          <div class="src-bar"><div class="src-bar-fill" id="src-bar-outlook" style="width:0%;background:var(--outlook);"></div></div>
         </div>
         <div class="src-card">
           <div class="src-card-top">
             <div class="src-icon" style="background:rgba(234,67,53,0.2);">✉️</div>
             <span class="src-name">Gmail</span>
           </div>
-          <div class="src-count">7</div>
+          <div class="src-count" id="src-cnt-gmail">—</div>
           <div class="src-label">emails today</div>
-          <div class="src-bar"><div class="src-bar-fill" style="width:65%;background:var(--gmail);"></div></div>
+          <div class="src-bar"><div class="src-bar-fill" id="src-bar-gmail" style="width:0%;background:var(--gmail);"></div></div>
         </div>
       </div>
 
       <div class="r-section">
         <div class="r-section-title">Volume by category — all sources</div>
-        <div class="r-card" style="padding:12px 0;">
-          <div class="chart-row"><span class="chart-lbl">Action needed</span><div class="chart-track"><div class="chart-fill" style="width:16%;background:var(--accent);"><span class="chart-val">5</span></div></div></div>
-          <div class="chart-row"><span class="chart-lbl">Meetings</span><div class="chart-track"><div class="chart-fill" style="width:10%;background:var(--green);"><span class="chart-val">3</span></div></div></div>
-          <div class="chart-row"><span class="chart-lbl">Channel discussion</span><div class="chart-track"><div class="chart-fill" style="width:42%;background:var(--purple);"><span class="chart-val">13</span></div></div></div>
-          <div class="chart-row"><span class="chart-lbl">FYI / info</span><div class="chart-track"><div class="chart-fill" style="width:3%;background:var(--blue);"><span class="chart-val" style="display:none">1</span></div></div></div>
-          <div class="chart-row"><span class="chart-lbl">Noise / auto</span><div class="chart-track"><div class="chart-fill" style="width:29%;background:var(--surface2);"><span class="chart-val">9</span></div></div></div>
-        </div>
+        <div class="r-card" id="volume-chart" style="padding:12px 0;"></div>
       </div>
 
       <div class="r-section">
@@ -856,7 +865,7 @@ html,body{height:100%;font-family:var(--sans);background:var(--bg);color:var(--t
       <div class="r-sub">Manage your Claude API key, webhook endpoints, and connector tokens — changes save automatically to your browser</div>
 
       <!-- Claude API -->
-      <div style="background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:20px 22px;margin-bottom:20px;">
+      <div id="s-claude-section" style="background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:20px 22px;margin-bottom:20px;">
         <div style="font-family:var(--mono);font-size:9px;letter-spacing:0.14em;text-transform:uppercase;color:var(--amber);margin-bottom:14px;display:flex;align-items:center;gap:7px;">
           <span style="width:7px;height:7px;border-radius:50%;background:var(--amber);display:inline-block;"></span>
           Claude API — AI Analysis &amp; Draft Engine
@@ -873,25 +882,28 @@ html,body{height:100%;font-family:var(--sans);background:var(--bg);color:var(--t
       <!-- Connectors -->
       <div style="font-family:var(--mono);font-size:9px;letter-spacing:0.12em;text-transform:uppercase;color:var(--text3);margin-bottom:12px;padding-bottom:7px;border-bottom:1px solid var(--border);">Connected Sources — Webhooks &amp; Tokens</div>
 
-      <!-- Teams connector -->
+      <!-- Microsoft connector — covers both Teams + Outlook via single OAuth -->
       <div style="background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:18px 20px;margin-bottom:12px;" id="s-card-teams">
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
           <div style="display:flex;align-items:center;gap:10px;">
-            <div style="width:30px;height:30px;border-radius:7px;background:rgba(98,100,167,0.2);display:flex;align-items:center;justify-content:center;font-size:15px;">💬</div>
+            <div style="width:30px;height:30px;border-radius:7px;background:rgba(98,100,167,0.2);display:flex;align-items:center;justify-content:center;font-size:15px;">🪟</div>
             <div>
-              <div style="font-size:13px;font-weight:500;color:var(--text);">Microsoft Teams</div>
-              <div style="font-family:var(--mono);font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:0.08em;">Messages + Channels</div>
+              <div style="font-size:13px;font-weight:500;color:var(--text);">Microsoft — Teams &amp; Outlook</div>
+              <div style="font-family:var(--mono);font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:0.08em;">One login · both connected</div>
             </div>
           </div>
-          <span id="s-status-teams" style="font-family:var(--mono);font-size:9px;padding:3px 9px;border-radius:10px;background:var(--surface);color:var(--text3);text-transform:uppercase;letter-spacing:0.06em;">Not connected</span>
+          <div style="display:flex;align-items:center;gap:6px;">
+            <span id="s-status-outlook" style="display:none;font-family:var(--mono);font-size:9px;padding:3px 9px;border-radius:10px;background:var(--surface);color:var(--text3);text-transform:uppercase;letter-spacing:0.06em;">Not connected</span>
+            <span id="s-status-teams" style="font-family:var(--mono);font-size:9px;padding:3px 9px;border-radius:10px;background:var(--surface);color:var(--text3);text-transform:uppercase;letter-spacing:0.06em;">Not connected</span>
+          </div>
         </div>
         <div style="background:var(--bg3);border-radius:8px;padding:12px 14px;margin-bottom:10px;">
-          <div style="font-family:var(--mono);font-size:9px;color:var(--text3);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:4px;">Microsoft OAuth — authorizes both Teams &amp; Outlook in one click</div>
-          <div style="font-family:var(--mono);font-size:9px;color:var(--text3);">Webhook subscriptions register automatically after authorization.</div>
+          <div style="font-family:var(--mono);font-size:9px;color:var(--text3);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:4px;">Single OAuth flow — one authorization connects both</div>
+          <div style="font-family:var(--mono);font-size:9px;color:var(--text3);">Syncs Teams messages, channels, Outlook email, and calendar. Webhook subscriptions register automatically.</div>
         </div>
         <div style="display:flex;gap:8px;">
           <button onclick="sMicrosoftOAuth()" style="padding:8px 16px;border-radius:7px;border:none;background:#6264a7;color:#fff;font-family:var(--mono);font-size:10px;cursor:pointer;font-weight:500;">Authorize with Microsoft</button>
-          <button onclick="sDisconnect('teams')" style="padding:8px 12px;border-radius:7px;border:1px solid var(--border);background:transparent;color:var(--text3);font-family:var(--mono);font-size:10px;cursor:pointer;">Disconnect</button>
+          <button onclick="sMicrosoftDisconnect()" style="padding:8px 12px;border-radius:7px;border:1px solid var(--border);background:transparent;color:var(--text3);font-family:var(--mono);font-size:10px;cursor:pointer;">Disconnect</button>
         </div>
       </div>
 
@@ -918,28 +930,6 @@ html,body{height:100%;font-family:var(--sans);background:var(--bg);color:var(--t
           <input type="password" id="s-slack-token" placeholder="xoxb-slack-bot-token..." style="flex:1;background:var(--bg3);border:1px solid var(--border);border-radius:7px;padding:8px 12px;font-family:var(--mono);font-size:10px;color:var(--text);outline:none;"/>
           <button onclick="sConnect('slack')" style="padding:8px 16px;border-radius:7px;border:none;background:#4a154b;color:#fff;font-family:var(--mono);font-size:10px;cursor:pointer;font-weight:500;">Connect</button>
           <button onclick="sDisconnect('slack')" style="padding:8px 12px;border-radius:7px;border:1px solid var(--border);background:transparent;color:var(--text3);font-family:var(--mono);font-size:10px;cursor:pointer;">Disconnect</button>
-        </div>
-      </div>
-
-      <!-- Outlook connector -->
-      <div style="background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:18px 20px;margin-bottom:12px;" id="s-card-outlook">
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
-          <div style="display:flex;align-items:center;gap:10px;">
-            <div style="width:30px;height:30px;border-radius:7px;background:rgba(0,114,198,0.2);display:flex;align-items:center;justify-content:center;font-size:15px;">📧</div>
-            <div>
-              <div style="font-size:13px;font-weight:500;color:var(--text);">Outlook / Microsoft 365</div>
-              <div style="font-family:var(--mono);font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:0.08em;">Email + Calendar</div>
-            </div>
-          </div>
-          <span id="s-status-outlook" style="font-family:var(--mono);font-size:9px;padding:3px 9px;border-radius:10px;background:var(--surface);color:var(--text3);text-transform:uppercase;letter-spacing:0.06em;">Not connected</span>
-        </div>
-        <div style="background:var(--bg3);border-radius:8px;padding:12px 14px;margin-bottom:10px;">
-          <div style="font-family:var(--mono);font-size:9px;color:var(--text3);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:4px;">Microsoft OAuth — shared with Teams</div>
-          <div style="font-family:var(--mono);font-size:9px;color:var(--text3);">Click "Authorize with Microsoft" on the Teams card above — one login connects both.</div>
-        </div>
-        <div style="display:flex;gap:8px;">
-          <button onclick="sMicrosoftOAuth()" style="padding:8px 16px;border-radius:7px;border:none;background:#0072c6;color:#fff;font-family:var(--mono);font-size:10px;cursor:pointer;font-weight:500;">Authorize with Microsoft</button>
-          <button onclick="sDisconnect('outlook')" style="padding:8px 12px;border-radius:7px;border:1px solid var(--border);background:transparent;color:var(--text3);font-family:var(--mono);font-size:10px;cursor:pointer;">Disconnect</button>
         </div>
       </div>
 
@@ -1326,6 +1316,9 @@ function _setField(id, val) {
 
 function _populateSettingsFromProfile(profile, connectors) {
   if (!profile) return;
+  // Authenticated users: API key is server-side, hide the localStorage section
+  const claudeSection = document.getElementById("s-claude-section");
+  if (claudeSection) claudeSection.style.display = "none";
   _setField("s-profile-firstname", profile.first_name);
   _setField("s-profile-lastname",  profile.last_name);
   _setField("s-profile-title",     profile.title);
@@ -1358,7 +1351,8 @@ function updateSettingsStatus(src, connected) {
   const st = document.getElementById(`s-status-${src}`);
   if (!st) return;
   if (connected) {
-    st.textContent = "Connected"; st.style.background = "var(--green-soft)"; st.style.color = "var(--green)";
+    st.textContent = src === "teams" ? "Connected — Teams + Outlook" : "Connected";
+    st.style.background = "var(--green-soft)"; st.style.color = "var(--green)";
   } else {
     st.textContent = "Not connected"; st.style.background = "var(--surface)"; st.style.color = "var(--text3)";
   }
@@ -1409,6 +1403,20 @@ function sGoogleOAuth() {
   const token = API.auth._token;
   if (!token) { showToast("Please log in first"); return; }
   window.location.href = `/api/oauth/google/initiate?token=${encodeURIComponent(token)}`;
+}
+
+async function sMicrosoftDisconnect() {
+  if (isProduction()) {
+    try { await Promise.all([API.connectors.disconnect("teams"), API.connectors.disconnect("outlook")]); } catch(e) {}
+  }
+  ["teams","outlook"].forEach(src => {
+    STATE.connected[src] = false; STATE.activeSources.delete(src);
+    localStorage.removeItem(`pulse_${src}_token`);
+    updateSettingsStatus(src, false);
+    const pill = document.getElementById(`pill-${src}`);
+    if (pill) pill.classList.remove("active");
+  });
+  showToast("Microsoft disconnected");
 }
 
 async function sConnect(src) {
@@ -1547,7 +1555,19 @@ function renderFeed() {
   const msgs   = getFilteredMessages();
   scroll.innerHTML = "";
   if (msgs.length === 0) {
-    scroll.innerHTML = `<div style="padding:32px 16px;text-align:center;font-size:11px;color:var(--text3);font-family:var(--mono);">No messages in this view</div>`;
+    const emptyMap = {
+      action:   { icon:"✓", msg:"No action items — you're all clear", sub:"Check back when new messages arrive" },
+      priority: { icon:"◉", msg:"No priority messages right now", sub:"High-priority items will appear here" },
+      fyi:      { icon:"ℹ", msg:"No FYI messages in this view", sub:"Informational messages will appear here" },
+      noise:    { icon:"⊘", msg:"No noise filtered", sub:"Auto-flagged low-priority items appear here" },
+      all:      { icon:"✉", msg:"No messages in this view", sub:"Switch sources or filters above" },
+    };
+    const e = emptyMap[STATE.currentView] || emptyMap.all;
+    scroll.innerHTML = `<div style="padding:48px 16px;text-align:center;">
+      <div style="font-size:28px;opacity:0.2;margin-bottom:10px;">${e.icon}</div>
+      <div style="font-size:12px;color:var(--text2);font-weight:500;margin-bottom:4px;">${e.msg}</div>
+      <div style="font-size:10px;color:var(--text3);font-family:var(--mono);">${e.sub}</div>
+    </div>`;
     return;
   }
   msgs.forEach(m => {
@@ -1555,12 +1575,15 @@ function renderFeed() {
     const tagsHtml = (m.tags||[]).map(t => `<span class="fi-tag tag-${t}">${t}</span>`).join("");
     const chanHtml = m.channel ? `<span class="fi-tag tag-channel">${m.channel}</span>` : "";
     const div      = document.createElement("div");
-    div.className  = `feed-item${STATE.currentItem?.id === m.id ? " active" : ""}`;
+    div.className  = `feed-item${STATE.currentItem?.id === m.id ? " active" : ""}${m.category === "noise" ? " noise-row" : ""}`;
     div.id         = `fi-${m.id}`;
     div.innerHTML  = `
       <div class="fi-source-bar" style="background:${sc.color};"></div>
-      <div class="fi-top"><span class="fi-sender">${m.sender}</span><span class="fi-time">${m.time}</span></div>
-      <div class="fi-subject">${m.subject}</div>
+      <div class="fi-top">
+        <span class="fi-sender" style="${m.unread ? 'color:var(--text);font-weight:600;' : ''}">${m.sender}</span>
+        <span class="fi-time">${m.time}</span>
+      </div>
+      <div class="fi-subject" style="${m.unread ? 'color:var(--text);' : ''}">${m.subject}</div>
       <div class="fi-preview">${m.preview}</div>
       <div class="fi-meta"><span class="fi-source-badge ${sc.badgeClass}">${sc.label} · ${m.type}</span>${tagsHtml}${chanHtml}</div>
       ${m.unread ? `<div class="unread-dot"></div>` : ""}`;
@@ -1593,11 +1616,15 @@ function openItem(m) {
   if (m.channel) { ctx.style.display="block"; ctx.innerHTML=`<strong>${sc.label}</strong> · ${m.channel} · ${m.type}`; }
   else ctx.style.display="none";
   document.getElementById("msg-body").innerHTML = m.body;
-  document.getElementById("prio-row").style.display = "none";
-  document.getElementById("ai-panel-text").className = "ai-panel-text ai-loading-row";
-  document.getElementById("ai-panel-text").innerHTML = `<div class="ai-dots"><div class="ai-dot"></div><div class="ai-dot"></div><div class="ai-dot"></div></div> Analyzing...`;
   document.getElementById("draft-panel").style.display = "none";
-  autoAnalyze(m);
+  if (m.ai_summary) {
+    _setAiPanel(m.ai_summary, m.priority);
+  } else {
+    document.getElementById("prio-row").style.display = "none";
+    document.getElementById("ai-panel-text").className = "ai-panel-text ai-loading-row";
+    document.getElementById("ai-panel-text").innerHTML = `<div class="ai-dots"><div class="ai-dot"></div><div class="ai-dot"></div><div class="ai-dot"></div></div> Analyzing...`;
+    autoAnalyze(m);
+  }
 }
 
 // ══════════════════════════════════════════════════════════════
@@ -1855,12 +1882,67 @@ async function genReport() {
   txt.style.color="var(--text2)"; txt.textContent=result||"Report unavailable — check API key.";
 }
 
+function updateReportStats() {
+  const total  = MESSAGES.length;
+  const action = MESSAGES.filter(m => m.category === "action").length;
+  const noise  = MESSAGES.filter(m => m.category === "noise").length;
+  const unread = MESSAGES.filter(m => m.unread).length;
+  const sources = [...new Set(MESSAGES.map(m => m.source))];
+  const noisePercent = total ? Math.round(noise / total * 100) : 0;
+  const _s = (id, v) => { const el = document.getElementById(id); if (el) el.textContent = v; };
+  _s("rs-total",    total || "—");
+  _s("rs-action",   action || "—");
+  _s("rs-filtered", noise || "—");
+  _s("rs-channels", sources.length || "—");
+  _s("rs-unread",   unread || "—");
+  _s("rs-total-delta",    total ? "across all connected sources" : "No messages loaded");
+  _s("rs-action-delta",   action ? `${Math.round(action/total*100)}% of total` : "—");
+  _s("rs-noise-pct",      total ? `${noisePercent}% of total filtered` : "—");
+  _s("rs-channels-delta", sources.length ? sources.map(s => SOURCE_CONFIG[s]?.label || s).join(" + ") : "—");
+  _s("rs-unread-delta",   unread ? `${Math.round(unread/total*100)}% unread` : unread === 0 && total ? "All caught up ✓" : "—");
+  // Source breakdown cards
+  const bySrc = {};
+  MESSAGES.forEach(m => { bySrc[m.source] = (bySrc[m.source] || 0) + 1; });
+  const maxSrc = Math.max(...Object.values(bySrc), 1);
+  ["teams","slack","outlook","gmail"].forEach(src => {
+    const cnt = bySrc[src] || 0;
+    const cntEl = document.getElementById(`src-cnt-${src}`);
+    const barEl = document.getElementById(`src-bar-${src}`);
+    if (cntEl) cntEl.textContent = cnt;
+    if (barEl) barEl.style.width = Math.round(cnt / maxSrc * 100) + "%";
+  });
+  // Volume by category chart
+  const chart = document.getElementById("volume-chart");
+  if (chart && total > 0) {
+    const cats = [
+      { lbl:"Action needed",      key:"action",  color:"var(--accent)" },
+      { lbl:"Meeting",            key:"meeting",  color:"var(--green)"  },
+      { lbl:"FYI / info",         key:"fyi",      color:"var(--blue)"   },
+      { lbl:"Noise / auto",       key:"noise",    color:"var(--surface2)" },
+    ];
+    chart.innerHTML = cats.map(c => {
+      const cnt  = MESSAGES.filter(m => m.category === c.key).length;
+      const pct  = Math.round(cnt / total * 100);
+      return `<div class="chart-row">
+        <span class="chart-lbl">${c.lbl}</span>
+        <div class="chart-track"><div class="chart-fill" style="width:${Math.max(pct,1)}%;background:${c.color};">
+          ${cnt > 0 ? `<span class="chart-val">${cnt}</span>` : ""}
+        </div></div>
+      </div>`;
+    }).join("");
+  }
+}
+
 function renderReportLists() {
+  updateReportStats();
   const actionItems = document.getElementById("report-action-items");
   const allItems    = document.getElementById("report-all-items");
   const action      = MESSAGES.filter(m=>m.category==="action");
-  if (actionItems) actionItems.innerHTML=action.map(m=>reportRow(m)).join("");
-  if (allItems)    allItems.innerHTML   =MESSAGES.map(m=>reportRow(m)).join("");
+  if (actionItems) {
+    if (action.length) actionItems.innerHTML = action.map(m=>reportRow(m)).join("");
+    else actionItems.innerHTML = `<div style="padding:20px 16px;text-align:center;font-size:11px;color:var(--text3);font-family:var(--mono);">No action items — inbox is clear ✓</div>`;
+  }
+  if (allItems)    allItems.innerHTML = MESSAGES.length ? MESSAGES.map(m=>reportRow(m)).join("") : `<div style="padding:20px 16px;text-align:center;font-size:11px;color:var(--text3);font-family:var(--mono);">No messages loaded yet</div>`;
 }
 
 function reportRow(m) {
@@ -2010,12 +2092,12 @@ function buildMeetDetail(m) {
   const agendaHtml=(m.agenda||[]).map((a,i)=>`<div class="agenda-item">
     <div class="agenda-num">${i+1}.</div>
     <div class="agenda-text"><div class="agenda-title">${a.text}</div><div class="agenda-dur">${a.duration}</div></div>
-    <button onclick="removeAgendaItem('${m.id}','${a.id}')" style="background:none;border:none;color:var(--text3);cursor:pointer;font-size:12px;padding:0 4px;opacity:0.5;">×</button>
+    <button aria-label="Remove agenda item" onclick="removeAgendaItem('${m.id}','${a.id}')" style="background:none;border:none;color:var(--text3);cursor:pointer;font-size:12px;padding:0 4px;opacity:0.5;">×</button>
   </div>`).join("");
   const needsHtml=(m.needs||[]).map(n=>`<div class="need-item" id="need-${m.id}-${n.id}">
     <div class="need-cb${n.done?" checked":""}" onclick="toggleNeed('${m.id}','${n.id}')"></div>
     <div class="need-text${n.done?" done":""}">${n.text}</div>
-    <button onclick="removeNeed('${m.id}','${n.id}')" style="background:none;border:none;color:var(--text3);cursor:pointer;font-size:12px;padding:0 4px;opacity:0.5;">×</button>
+    <button aria-label="Remove item" onclick="removeNeed('${m.id}','${n.id}')" style="background:none;border:none;color:var(--text3);cursor:pointer;font-size:12px;padding:0 4px;opacity:0.5;">×</button>
   </div>`).join("");
   const attendeesHtml=(m.attendees||[]).map(a=>{
     const initials=a.name.split(" ").map(w=>w[0]).join("").toUpperCase().slice(0,2);
@@ -2036,7 +2118,7 @@ function buildMeetDetail(m) {
         <div class="meet-title-text">${m.title}</div>
         <div class="meet-title-actions">
           ${m.link?`<button class="meet-join-btn" onclick="window.open('${m.link}','_blank')">Join</button>`:""}
-          <button class="d-btn" onclick="deleteMeeting('${m.id}')" style="color:var(--accent);border-color:rgba(232,93,47,0.3);">Delete</button>
+          <button class="d-btn" aria-label="Delete meeting" onclick="deleteMeeting('${m.id}')" style="color:var(--accent);border-color:rgba(232,93,47,0.3);">Delete</button>
         </div>
       </div>
       <div class="meet-meta-chips">
@@ -2087,7 +2169,7 @@ function buildMeetDetail(m) {
         <div class="ai-dots"><div class="ai-dot"></div><div class="ai-dot"></div><div class="ai-dot"></div></div>
         Generate AI briefing — agenda summary, key context, talking points
       </button>
-      <div class="meet-ai-output" id="ai-prep-${m.id}" style="${m.aiPrep?'display:block;':''}">${m.aiPrep||""}</div>
+      <div class="meet-ai-output" id="ai-prep-${m.id}" style="${m.aiPrep?'display:block;':''}">${m.aiPrep?_renderMarkdown(m.aiPrep):""}</div>
     </div>
   </div>`;
 }
@@ -2280,6 +2362,34 @@ function doArchive() {
   renderFeed();
 }
 
+// ══════════════════════════════════════════════════════════════
+// KEYBOARD SHORTCUTS  J/K navigate · R draft · A archive · Esc close
+// ══════════════════════════════════════════════════════════════
+function initKeyboard() {
+  document.addEventListener("keydown", e => {
+    const tag = document.activeElement?.tagName;
+    if (tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT") return;
+    const msgs = getFilteredMessages();
+    const idx  = msgs.findIndex(m => m.id === STATE.currentItem?.id);
+    if (e.key === "j" || (e.key === "ArrowDown" && !e.metaKey)) {
+      e.preventDefault();
+      const next = idx < msgs.length - 1 ? msgs[idx + 1] : msgs[0];
+      if (next) openItem(next);
+    } else if (e.key === "k" || (e.key === "ArrowUp" && !e.metaKey)) {
+      e.preventDefault();
+      const prev = idx > 0 ? msgs[idx - 1] : msgs[msgs.length - 1];
+      if (prev) openItem(prev);
+    } else if (e.key === "r" && STATE.currentItem) {
+      e.preventDefault(); doDraft();
+    } else if (e.key === "a" && STATE.currentItem) {
+      e.preventDefault(); doArchive();
+    } else if (e.key === "Escape") {
+      const dp = document.getElementById("draft-panel");
+      if (dp && dp.style.display !== "none") { dp.style.display = "none"; return; }
+    }
+  });
+}
+
 function setApiStatus(s) {
   const dot  =document.getElementById("api-dot-top");
   const label=document.getElementById("api-status-top");
@@ -2304,6 +2414,13 @@ async function init() {
   if (hasAPI) {
     // Redirect to login if not authenticated
     if (!API.auth.isLoggedIn) { window.location.href="/"; return; }
+    // Show skeleton loader while data loads
+    const feedScroll = document.getElementById("feed-scroll");
+    if (feedScroll) feedScroll.innerHTML = [1,2,3,4,5,6].map(()=>`<div class="feed-skel">
+      <div class="feed-skel-row"><div class="feed-skel-line w60"></div><div class="feed-skel-line w30"></div></div>
+      <div class="feed-skel-line w80" style="margin-bottom:7px;"></div>
+      <div class="feed-skel-line w45"></div>
+    </div>`).join("");
     setApiStatus("calling");
     try {
       const [profile, connectors] = await Promise.all([ API.profile.get(), API.connectors.get() ]);
@@ -2331,6 +2448,7 @@ async function init() {
           subject:m.subject, preview:m.preview, body:m.body,
           tags:m.tags||[], priority:m.priority||50, category:m.category||"fyi",
           unread:m.unread!==false, channel:m.channel||null,
+          ai_summary:m.ai_summary||null, ai_action:m.ai_action||null,
         }));
         // Replace meetings with real data (clears any cached demo meetings)
         if (meetingsData?.meetings !== undefined) {
@@ -2363,6 +2481,7 @@ async function init() {
   if (!API.auth.isLoggedIn) seedMeetings();
   updateTabCounts();
   switchTab("email");
+  initKeyboard();
 
   // Handle OAuth redirect results
   const qp = new URLSearchParams(window.location.search);
@@ -2405,6 +2524,7 @@ async function _refreshFromAPI(toast) {
       subject:m.subject, preview:m.preview, body:m.body,
       tags:m.tags||[], priority:m.priority||50, category:m.category||"fyi",
       unread:m.unread!==false, channel:m.channel||null,
+      ai_summary:m.ai_summary||null, ai_action:m.ai_action||null,
     }));
     if (meetingsData?.meetings !== undefined) {
       saveMeetings((meetingsData.meetings||[]).map(m=>({
